@@ -1,0 +1,109 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Venta } from './venta.entity';
+import { DetalleVenta } from './detalle-venta.entity';
+import { Producto } from '../productos/producto.entity';
+import { Repository } from 'typeorm';
+
+@Injectable()
+export class VentasService {
+  constructor(
+    @InjectRepository(Venta)
+    private ventaRepo: Repository<Venta>,
+
+    @InjectRepository(DetalleVenta)
+    private detalleRepo: Repository<DetalleVenta>,
+
+    @InjectRepository(Producto)
+    private productoRepo: Repository<Producto>,
+  ) { }
+
+  // 🔥 CREAR VENTA
+  async crearVenta(data: any) {
+    const venta = this.ventaRepo.create({
+      total: 0,
+    });
+
+    const detalles: DetalleVenta[] = [];
+
+    for (const item of data.productos) {
+      const producto = await this.productoRepo.findOne({
+        where: { id: item.productoId },
+      });
+
+      if (!producto) {
+        throw new Error('Producto no encontrado');
+      }
+
+      // ⚠️ Validar stock
+      if (producto.stock < item.cantidad) {
+        throw new Error(`Stock insuficiente para ${producto.nombre}`);
+      }
+
+      // 💥 DESCONTAR STOCK
+      producto.stock -= item.cantidad;
+      await this.productoRepo.save(producto);
+
+      const detalle = new DetalleVenta();
+      detalle.producto = producto;
+      detalle.cantidad = item.cantidad;
+      detalle.precio_unitario = Number(producto.precio);
+      detalle.total = Number(producto.precio) * item.cantidad;
+
+      venta.total += Number(producto.precio) * item.cantidad;
+      detalles.push(detalle);
+    }
+
+    const ventaGuardada = await this.ventaRepo.save(venta);
+
+    for (const detalle of detalles) {
+      detalle.venta = ventaGuardada;
+      await this.detalleRepo.save(detalle);
+    }
+
+    return ventaGuardada;
+  }
+
+  // 📋 LISTAR VENTAS
+  async findAll() {
+    return this.ventaRepo.find({
+      relations: ['detalles', 'detalles.producto'],
+    });
+  }
+
+  // 📊 DASHBOARD
+ async getDashboard() {
+  const detalles = await this.detalleRepo.find({
+    relations: ['producto', 'producto.categoria'],
+  });
+
+  let totalIngresos = 0;
+  let totalProductos = 0;
+
+  const categorias: any = {};
+
+  for (const d of detalles) {
+    totalIngresos += Number(d.total);
+    totalProductos += d.cantidad;
+
+    const categoria = d.producto?.categoria?.nombre || "Sin categoría";
+
+    if (!categorias[categoria]) {
+      categorias[categoria] = 0;
+    }
+
+    categorias[categoria] += Number(d.total);
+  }
+
+  const ventasPorCategoria = Object.keys(categorias).map(c => ({
+    categoria: c,
+    total: categorias[c]
+  }));
+
+  return {
+    totalIngresos,
+    totalProductos,
+    ventasPorCategoria
+  };
+}
+}

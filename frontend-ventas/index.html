@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistema de Ventas</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-light">
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-dark bg-dark px-3">
+  <span class="navbar-brand">Sistema de Ventas</span>
+
+  <div>
+    <span id="usuarioLogueado" class="text-white me-3"></span>
+
+    <button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('dashboard')">Dashboard</button>
+    <button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('productos')">Productos</button>
+    <button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('ventas')">Ventas</button>
+    <button class="btn btn-danger btn-sm" onclick="logout()">Salir</button>
+  </div>
+</nav>
+
+<div class="container mt-4">
+
+  <!-- DASHBOARD -->
+  <div id="dashboard">
+    <h3>Dashboard</h3>
+
+    <div class="row">
+
+      <div class="col-md-6">
+        <div class="card p-3 text-center shadow-sm">
+          <h5>Ingresos Totales</h5>
+          <h2 id="totalIngresos">$0</h2>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card p-3 text-center shadow-sm">
+          <h5>Productos Vendidos</h5>
+          <h2 id="totalProductos">0</h2>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- GRAFICO -->
+    <div class="card p-3 mt-4 shadow-sm">
+      <h5>Ventas por Categoría</h5>
+      <canvas id="graficoCategorias"></canvas>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="card p-3 mt-3 shadow-sm">
+      <h5>Resumen por Categoría</h5>
+      <div id="resumenCategorias"></div>
+    </div>
+  </div>
+
+  <!-- PRODUCTOS -->
+  <div id="productos" style="display:none;">
+    <h3>Gestión de Productos</h3>
+
+    <div class="card p-3 shadow-sm">
+      <input id="nombreProducto" class="form-control mb-2" placeholder="Nombre">
+      <input id="precioProducto" class="form-control mb-2" placeholder="Precio">
+      <input id="stockProducto" class="form-control mb-2" placeholder="Stock">
+
+      <select id="categoriaProducto" class="form-control mb-2"></select>
+
+      <button id="btnGuardarProducto" class="btn btn-primary" onclick="guardarProducto()">
+        Guardar Producto
+      </button>
+    </div>
+  </div>
+
+  <!-- VENTAS -->
+  <div id="ventas" style="display:none;">
+    <h3>Registrar Venta</h3>
+
+    <div class="card p-3 mb-3 shadow-sm">
+      <select id="productoVenta" class="form-control mb-2"></select>
+
+      <input id="cantidadVenta" class="form-control mb-2" placeholder="Cantidad">
+
+      <button class="btn btn-primary" onclick="agregarAlCarrito()">
+        Agregar al Carrito
+      </button>
+    </div>
+
+    <div class="card p-3 mb-3 shadow-sm">
+      <h5>Carrito</h5>
+      <ul id="carrito" class="list-group"></ul>
+    </div>
+
+    <button class="btn btn-success w-100" onclick="realizarVenta()">
+      Finalizar Venta
+    </button>
+  </div>
+
+</div>
+
+<!-- APP -->
+<script src="app.js"></script>
+
+</body>
+</html>

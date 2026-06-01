@@ -1,0 +1,7 @@
+backend-ventas/node_modules/
+backend-ventas/dist/
+
+frontend-ventas/node_modules/
+
+.vscode/
+.env
