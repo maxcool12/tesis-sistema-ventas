@@ -66,20 +66,24 @@
 
   <!-- PRODUCTOS -->
   <div id="productos" style="display:none;">
-    <h3>Gestión de Productos</h3>
+  <h3>Gestión de Productos</h3>
 
-    <div class="card p-3 shadow-sm">
-      <input id="nombreProducto" class="form-control mb-2" placeholder="Nombre">
-      <input id="precioProducto" class="form-control mb-2" placeholder="Precio">
-      <input id="stockProducto" class="form-control mb-2" placeholder="Stock">
+  <div class="card p-3 shadow-sm mb-4">
+    <input id="nombreProducto" class="form-control mb-2" placeholder="Nombre">
+    <input id="precioProducto" class="form-control mb-2" placeholder="Precio">
+    <input id="stockProducto" class="form-control mb-2" placeholder="Stock">
 
-      <select id="categoriaProducto" class="form-control mb-2"></select>
+    <select id="categoriaProducto" class="form-control mb-2"></select>
 
-      <button id="btnGuardarProducto" class="btn btn-primary" onclick="guardarProducto()">
-        Guardar Producto
-      </button>
-    </div>
+    <button id="btnGuardarProducto" class="btn btn-primary" onclick="guardarProducto()">
+      Guardar Producto
+    </button>
   </div>
+
+  <h4>Productos Registrados</h4>
+
+  <div id="listaProductos" class="row"></div>
+</div>
 
   <!-- VENTAS -->
   <div id="ventas" style="display:none;">

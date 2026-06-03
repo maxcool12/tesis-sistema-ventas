@@ -55,7 +55,10 @@ function mostrarSeccion(seccion) {
   const activa = document.getElementById(seccion);
   if (activa) activa.style.display = "block";
 
-  if (seccion === "productos") cargarCategorias();
+  if (seccion === "productos") {
+    cargarCategorias();
+    cargarProductos();
+  }
   if (seccion === "ventas") cargarProductosVenta();
   if (seccion === "dashboard") cargarDashboard();
 }
@@ -84,6 +87,62 @@ async function guardarProducto() {
   });
 
   alert("Producto guardado");
+
+  document.getElementById("nombreProducto").value = "";
+  document.getElementById("precioProducto").value = "";
+  document.getElementById("stockProducto").value = "";
+
+  cargarProductos();
+}
+
+async function cargarProductos() {
+  const res = await fetch(`${API}/productos`,);
+  cargarProductos();
+  const productos = await res.json();
+
+  const contenedor = document.getElementById("listaProductos");
+
+  if (!contenedor) return;
+
+  contenedor.innerHTML = "";
+
+  productos.forEach(producto => {
+
+    let colorStock = "success";
+
+    if (producto.stock <= 5) {
+      colorStock = "warning";
+    }
+
+    if (producto.stock <= 2) {
+      colorStock = "danger";
+    }
+
+    contenedor.innerHTML += `
+      <div class="col-md-4 mb-3">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+
+            <h5 class="card-title">${producto.nombre}</h5>
+
+            <p class="mb-1">
+              <strong>Precio:</strong> $${producto.precio}
+            </p>
+
+            <p class="mb-2">
+              <strong>Categoría:</strong>
+              ${producto.categoria?.nombre || "Sin categoría"}
+            </p>
+
+            <span class="badge bg-${colorStock}">
+              Stock: ${producto.stock}
+            </span>
+
+          </div>
+        </div>
+      </div>
+    `;
+  });
 }
 
 // 📂 CATEGORÍAS

@@ -10,9 +10,11 @@ export class ProductosService {
     private repo: Repository<Producto>,
   ) {}
 
-  findAll() {
-    return this.repo.find();
-  }
+ async findAll() {
+  return await this.repo.find({
+    relations: ['categoria']
+  });
+}
 
   create(data: Partial<Producto>) {
     const producto = this.repo.create(data);
