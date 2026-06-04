@@ -109,13 +109,16 @@ async function cargarProductos() {
   productos.forEach(producto => {
 
     let colorStock = "success";
+    let estadoStock = "Stock Alto";
 
     if (producto.stock <= 5) {
       colorStock = "warning";
+      estadoStock = "Stock Medio";
     }
 
     if (producto.stock <= 2) {
       colorStock = "danger";
+      estadoStock = "Stock Bajo";
     }
 
     contenedor.innerHTML += `
@@ -134,10 +137,17 @@ async function cargarProductos() {
               ${producto.categoria?.nombre || "Sin categoría"}
             </p>
 
-            <span class="badge bg-${colorStock}">
-              Stock: ${producto.stock}
-            </span>
+           <div class="mt-2">
 
+  <span class="badge bg-${colorStock}">
+    Stock: ${producto.stock}
+  </span>
+
+  <div class="mt-2">
+    <strong>${estadoStock}</strong>
+  </div>
+
+</div>
           </div>
         </div>
       </div>
