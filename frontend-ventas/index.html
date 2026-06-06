@@ -67,7 +67,17 @@
   <!-- PRODUCTOS -->
   <div id="productos" style="display:none;">
   <h3>Gestión de Productos</h3>
+  
+  <button
+  class="btn btn-secondary mb-3"
+  onclick="mostrarInactivos()">
+  Ver Productos Inactivos
+</button>
 
+<div
+  id="productosInactivos"
+  class="row">
+</div>
   <div class="card p-3 shadow-sm mb-4">
     <input id="nombreProducto" class="form-control mb-2" placeholder="Nombre">
     <input id="precioProducto" class="form-control mb-2" placeholder="Precio">

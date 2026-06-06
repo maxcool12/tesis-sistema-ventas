@@ -96,11 +96,12 @@ async function guardarProducto() {
 }
 
 async function cargarProductos() {
-  const res = await fetch(`${API}/productos`,);
-  cargarProductos();
+
+  const res = await fetch(`${API}/productos`);
   const productos = await res.json();
 
-  const contenedor = document.getElementById("listaProductos");
+  const contenedor =
+    document.getElementById("listaProductos");
 
   if (!contenedor) return;
 
@@ -121,38 +122,203 @@ async function cargarProductos() {
       estadoStock = "Stock Bajo";
     }
 
+    let botonesAdmin = "";
+
+    if (esAdmin()) {
+      botonesAdmin = `
+        <button
+  class="btn btn-warning btn-sm me-2"
+  onclick="editarProducto(
+    ${producto.id},
+    '${producto.nombre}',
+    ${producto.precio},
+    ${producto.stock}
+  )">
+  Editar
+</button>
+
+<button
+  class="btn btn-danger btn-sm"
+  onclick="eliminarProducto(${producto.id})">
+  Desactivar
+</button>
+      `;
+    }
+
+
+
     contenedor.innerHTML += `
       <div class="col-md-4 mb-3">
         <div class="card shadow-sm h-100">
           <div class="card-body">
 
-            <h5 class="card-title">${producto.nombre}</h5>
+            <h5 class="card-title">
+              ${producto.nombre}
+            </h5>
 
-            <p class="mb-1">
-              <strong>Precio:</strong> $${producto.precio}
+            <p>
+              <strong>Precio:</strong>
+              $${producto.precio}
             </p>
 
-            <p class="mb-2">
+            <p>
               <strong>Categoría:</strong>
               ${producto.categoria?.nombre || "Sin categoría"}
             </p>
 
-           <div class="mt-2">
+            <div class="mt-3">
+              ${botonesAdmin}
+            </div>
 
-  <span class="badge bg-${colorStock}">
-    Stock: ${producto.stock}
-  </span>
+            <div class="mt-2">
+              <span class="badge bg-${colorStock}">
+                Stock: ${producto.stock}
+              </span>
 
-  <div class="mt-2">
-    <strong>${estadoStock}</strong>
-  </div>
+              <div class="mt-2">
+                <strong>${estadoStock}</strong>
+              </div>
+            </div>
 
-</div>
           </div>
         </div>
       </div>
     `;
   });
+
+}
+async function eliminarProducto(id) {
+
+  if (!esAdmin()) {
+    alert("No autorizado");
+    return;
+  }
+
+  const confirmar = confirm(
+    "¿Desea eliminar este producto?"
+  );
+
+  if (!confirmar) return;
+
+  await fetch(`${API}/productos/${id}`, {
+    method: "DELETE"
+  });
+
+  cargarProductos();
+}
+async function editarProducto(
+  id,
+  nombreActual,
+  precioActual,
+  stockActual
+) {
+
+  if (!esAdmin()) {
+    alert("No autorizado");
+    return;
+  }
+
+  const nombre = prompt(
+    "Nuevo nombre:",
+    nombreActual
+  );
+
+  if (!nombre) return;
+
+  const precio = prompt(
+    "Nuevo precio:",
+    precioActual
+  );
+
+  if (!precio) return;
+
+  const stock = prompt(
+    "Nuevo stock:",
+    stockActual
+  );
+
+  if (!stock) return;
+
+  await fetch(
+    `${API}/productos/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
+      body: JSON.stringify({
+        nombre,
+        precio,
+        stock
+      })
+    }
+  );
+
+  cargarProductos();
+}
+async function mostrarInactivos() {
+
+  const res = await fetch(
+    `${API}/productos/todos`
+  );
+
+  const productos = await res.json();
+
+  const inactivos =
+    productos.filter(
+      p => !p.activo
+    );
+
+  const contenedor =
+    document.getElementById(
+      "productosInactivos"
+    );
+
+  contenedor.innerHTML = "";
+
+  inactivos.forEach(prod => {
+
+    contenedor.innerHTML += `
+      <div class="col-md-4 mb-3">
+        <div class="card border-secondary">
+
+          <div class="card-body">
+
+            <h5>${prod.nombre}</h5>
+
+            <p>
+              Precio:
+              $${prod.precio}
+            </p>
+
+            <button
+              class="btn btn-success"
+              onclick="reactivarProducto(${prod.id})">
+
+              Reactivar
+
+            </button>
+
+          </div>
+
+        </div>
+      </div>
+    `;
+  });
+}
+async function reactivarProducto(id) {
+
+  await fetch(
+    `${API}/productos/${id}/reactivar`,
+    {
+      method: "PUT"
+    }
+  );
+
+  cargarProductos();
+
+  mostrarInactivos();
 }
 
 // 📂 CATEGORÍAS
