@@ -72,38 +72,57 @@ export class VentasService {
   }
 
   // 📊 DASHBOARD
- async getDashboard() {
-  const detalles = await this.detalleRepo.find({
-    relations: ['producto', 'producto.categoria'],
-  });
+  async getDashboard() {
+    const detalles = await this.detalleRepo.find({
+      relations: ['producto', 'producto.categoria'],
+    });
 
-  let totalIngresos = 0;
-  let totalProductos = 0;
+    let totalIngresos = 0;
+    let totalProductos = 0;
+    let cantidadVentas = 0;
 
-  const categorias: any = {};
+    const productosVendidos: any = {};
+    const categorias: any = {};
 
-  for (const d of detalles) {
-    totalIngresos += Number(d.total);
-    totalProductos += d.cantidad;
+    for (const d of detalles) {
+      totalIngresos += Number(d.total);
+      totalProductos += d.cantidad;
+      const nombreProducto = d.producto.nombre;
 
-    const categoria = d.producto?.categoria?.nombre || "Sin categoría";
+      if (!productosVendidos[nombreProducto]) {
+        productosVendidos[nombreProducto] = 0;
+      }
 
-    if (!categorias[categoria]) {
-      categorias[categoria] = 0;
+      productosVendidos[nombreProducto] += d.cantidad;
+
+      const categoria = d.producto?.categoria?.nombre || "Sin categoría";
+
+
+      if (!categorias[categoria]) {
+        categorias[categoria] = 0;
+      }
+
+      categorias[categoria] += Number(d.total);
     }
 
-    categorias[categoria] += Number(d.total);
+    const ventasPorCategoria = Object.keys(categorias).map(c => ({
+      categoria: c,
+      total: categorias[c]
+    }));
+    const productoMasVendido =
+  Object.keys(productosVendidos).length > 0
+    ? Object.entries(productosVendidos)
+        .sort((a: any, b: any) => b[1] - a[1])[0][0]
+    : "Sin ventas";
+
+cantidadVentas = await this.ventaRepo.count();
+
+    return {
+  totalIngresos,
+  totalProductos,
+  cantidadVentas,
+  productoMasVendido,
+  ventasPorCategoria
+};
   }
-
-  const ventasPorCategoria = Object.keys(categorias).map(c => ({
-    categoria: c,
-    total: categorias[c]
-  }));
-
-  return {
-    totalIngresos,
-    totalProductos,
-    ventasPorCategoria
-  };
-}
 }

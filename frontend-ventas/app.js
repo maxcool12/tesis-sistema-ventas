@@ -517,6 +517,12 @@ async function cargarDashboard() {
 
   document.getElementById("totalProductos").textContent =
     data.totalProductos || 0;
+    
+    document.getElementById("cantidadVentas").textContent =
+  data.cantidadVentas || 0;
+
+document.getElementById("productoMasVendido").textContent =
+  data.productoMasVendido || "-";
 
   // 🧠 VALIDAR SI HAY DATOS
   if (!data.ventasPorCategoria || data.ventasPorCategoria.length === 0) {
