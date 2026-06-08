@@ -9,9 +9,14 @@ export class VentasController {
   crear(@Body() data: any) {
     return this.service.crearVenta(data);
   }
-@Get('dashboard')
-getDashboard() {
-  return this.service.getDashboard();
-}
-  
+
+  @Get()
+  findAll() {
+    return this.service.findAll();
+  }
+
+  @Get('dashboard')
+  getDashboard() {
+    return this.service.getDashboard();
+  }
 }

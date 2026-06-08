@@ -47,20 +47,34 @@ function esAdmin() {
 
 // 📌 NAVEGACIÓN
 function mostrarSeccion(seccion) {
-  ["dashboard", "productos", "ventas"].forEach(id => {
+
+  ["dashboard", "productos", "ventas", "historial"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
   });
 
   const activa = document.getElementById(seccion);
-  if (activa) activa.style.display = "block";
+
+  if (activa) {
+    activa.style.display = "block";
+  }
 
   if (seccion === "productos") {
     cargarCategorias();
     cargarProductos();
   }
-  if (seccion === "ventas") cargarProductosVenta();
-  if (seccion === "dashboard") cargarDashboard();
+
+  if (seccion === "ventas") {
+    cargarProductosVenta();
+  }
+
+  if (seccion === "dashboard") {
+    cargarDashboard();
+  }
+
+  if (seccion === "historial") {
+    cargarHistorial();
+  }
 }
 
 // 📦 PRODUCTOS
@@ -126,13 +140,14 @@ async function cargarProductos() {
 
     if (esAdmin()) {
       botonesAdmin = `
-        <button
+       <button
   class="btn btn-warning btn-sm me-2"
   onclick="editarProducto(
     ${producto.id},
     '${producto.nombre}',
     ${producto.precio},
-    ${producto.stock}
+    ${producto.stock},
+    ${producto.categoria?.id || 0}
   )">
   Editar
 </button>
@@ -208,52 +223,86 @@ async function eliminarProducto(id) {
 }
 async function editarProducto(
   id,
-  nombreActual,
-  precioActual,
-  stockActual
+  nombre,
+  precio,
+  stock,
+  categoriaId
 ) {
 
-  if (!esAdmin()) {
-    alert("No autorizado");
-    return;
-  }
+  document.getElementById("editarId").value = id;
+  document.getElementById("editarNombre").value = nombre;
+  document.getElementById("editarPrecio").value = precio;
+  document.getElementById("editarStock").value = stock;
 
-  const nombre = prompt(
-    "Nuevo nombre:",
-    nombreActual
+  const res = await fetch(`${API}/categorias`);
+  const categorias = await res.json();
+
+  const select =
+    document.getElementById("editarCategoria");
+
+  select.innerHTML = "";
+
+  categorias.forEach(c => {
+
+    select.innerHTML += `
+      <option
+        value="${c.id}"
+        ${c.id === categoriaId ? "selected" : ""}>
+        ${c.nombre}
+      </option>
+    `;
+  });
+
+  const modal = new bootstrap.Modal(
+    document.getElementById(
+      "modalEditarProducto"
+    )
   );
 
-  if (!nombre) return;
+  modal.show();
+}
+async function guardarEdicionProducto() {
 
-  const precio = prompt(
-    "Nuevo precio:",
-    precioActual
-  );
+  const id =
+    document.getElementById("editarId").value;
 
-  if (!precio) return;
+  const nombre =
+    document.getElementById("editarNombre").value;
 
-  const stock = prompt(
-    "Nuevo stock:",
-    stockActual
-  );
+  const precio =
+    document.getElementById("editarPrecio").value;
 
-  if (!stock) return;
+  const stock =
+    document.getElementById("editarStock").value;
+
+  const categoriaId =
+    document.getElementById("editarCategoria").value;
 
   await fetch(
     `${API}/productos/${id}`,
     {
       method: "PUT",
       headers: {
-        "Content-Type":
-          "application/json"
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         nombre,
         precio,
-        stock
+        stock,
+        categoria: {
+          id: Number(categoriaId)
+        }
       })
     }
   );
+
+  bootstrap.Modal
+    .getInstance(
+      document.getElementById(
+        "modalEditarProducto"
+      )
+    )
+    .hide();
 
   cargarProductos();
 }
@@ -385,6 +434,51 @@ async function realizarVenta() {
   document.getElementById("productoVenta").selectedIndex = 0;
 
   cargarDashboard();
+}
+async function cargarHistorial() {
+
+  const res = await fetch(
+    `${API}/ventas`
+  );
+
+  const ventas = await res.json();
+
+  const tabla =
+    document.getElementById(
+      "tablaHistorial"
+    );
+
+  tabla.innerHTML = "";
+
+  ventas.forEach(venta => {
+
+    venta.detalles.forEach(detalle => {
+
+      tabla.innerHTML += `
+        <tr>
+
+          <td>
+            ${new Date(
+        venta.fecha
+      ).toLocaleString()}
+          </td>
+
+          <td>
+            ${detalle.producto.nombre}
+          </td>
+
+          <td>
+            ${detalle.cantidad}
+          </td>
+
+          <td>
+            $${detalle.total}
+          </td>
+
+        </tr>
+      `;
+    });
+  });
 }
 
 // 📦 PRODUCTOS PARA VENTA
