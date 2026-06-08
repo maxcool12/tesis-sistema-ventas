@@ -113,6 +113,9 @@ async function cargarProductos() {
 
   const res = await fetch(`${API}/productos`);
   const productos = await res.json();
+  const textoBusqueda =
+  document.getElementById("buscarProducto")?.value
+    ?.toLowerCase() || "";  
 
   const contenedor =
     document.getElementById("listaProductos");
@@ -121,7 +124,13 @@ async function cargarProductos() {
 
   contenedor.innerHTML = "";
 
-  productos.forEach(producto => {
+  productos
+  .filter(producto =>
+    producto.nombre
+      .toLowerCase()
+      .includes(textoBusqueda)
+  )
+  .forEach(producto => {
 
     let colorStock = "success";
     let estadoStock = "Stock Alto";
