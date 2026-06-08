@@ -114,8 +114,11 @@ async function cargarProductos() {
   const res = await fetch(`${API}/productos`);
   const productos = await res.json();
   const textoBusqueda =
-  document.getElementById("buscarProducto")?.value
-    ?.toLowerCase() || "";  
+    document.getElementById("buscarProducto")?.value
+      ?.toLowerCase() || "";
+
+  const categoriaSeleccionada =
+  document.getElementById("filtroCategoria")?.value || "";
 
   const contenedor =
     document.getElementById("listaProductos");
@@ -125,30 +128,38 @@ async function cargarProductos() {
   contenedor.innerHTML = "";
 
   productos
-  .filter(producto =>
-    producto.nombre
-      .toLowerCase()
-      .includes(textoBusqueda)
-  )
+  .filter(producto => {
+
+    const coincideNombre =
+      producto.nombre
+        .toLowerCase()
+        .includes(textoBusqueda);
+
+    const coincideCategoria =
+      categoriaSeleccionada === "" ||
+      producto.categoria?.id == categoriaSeleccionada;
+
+    return coincideNombre && coincideCategoria;
+  })
   .forEach(producto => {
 
-    let colorStock = "success";
-    let estadoStock = "Stock Alto";
+      let colorStock = "success";
+      let estadoStock = "Stock Alto";
 
-    if (producto.stock <= 5) {
-      colorStock = "warning";
-      estadoStock = "Stock Medio";
-    }
+      if (producto.stock <= 5) {
+        colorStock = "warning";
+        estadoStock = "Stock Medio";
+      }
 
-    if (producto.stock <= 2) {
-      colorStock = "danger";
-      estadoStock = "Stock Bajo";
-    }
+      if (producto.stock <= 2) {
+        colorStock = "danger";
+        estadoStock = "Stock Bajo";
+      }
 
-    let botonesAdmin = "";
+      let botonesAdmin = "";
 
-    if (esAdmin()) {
-      botonesAdmin = `
+      if (esAdmin()) {
+        botonesAdmin = `
        <button
   class="btn btn-warning btn-sm me-2"
   onclick="editarProducto(
@@ -167,11 +178,11 @@ async function cargarProductos() {
   Desactivar
 </button>
       `;
-    }
+      }
 
 
 
-    contenedor.innerHTML += `
+      contenedor.innerHTML += `
       <div class="col-md-4 mb-3">
         <div class="card shadow-sm h-100">
           <div class="card-body">
@@ -208,7 +219,7 @@ async function cargarProductos() {
         </div>
       </div>
     `;
-  });
+    });
 
 }
 async function eliminarProducto(id) {
@@ -384,16 +395,37 @@ async function cargarCategorias() {
   const res = await fetch(`${API}/categorias`);
   const data = await res.json();
 
+  // SELECT DEL FORMULARIO
   const select = document.getElementById("categoriaProducto");
-  if (!select) return;
 
-  select.innerHTML = "";
+  if (select) {
+    select.innerHTML = "";
 
-  data.forEach(c => {
-    select.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
-  });
+    data.forEach(c => {
+      select.innerHTML += `
+        <option value="${c.id}">
+          ${c.nombre}
+        </option>
+      `;
+    });
+  }
+
+  // SELECT DEL FILTRO
+  const filtro = document.getElementById("filtroCategoria");
+
+  if (filtro) {
+    filtro.innerHTML =
+      `<option value="">Todas las categorías</option>`;
+
+    data.forEach(c => {
+      filtro.innerHTML += `
+        <option value="${c.id}">
+          ${c.nombre}
+        </option>
+      `;
+    });
+  }
 }
-
 // 🛒 CARRITO
 let carrito = [];
 
@@ -517,12 +549,12 @@ async function cargarDashboard() {
 
   document.getElementById("totalProductos").textContent =
     data.totalProductos || 0;
-    
-    document.getElementById("cantidadVentas").textContent =
-  data.cantidadVentas || 0;
 
-document.getElementById("productoMasVendido").textContent =
-  data.productoMasVendido || "-";
+  document.getElementById("cantidadVentas").textContent =
+    data.cantidadVentas || 0;
+
+  document.getElementById("productoMasVendido").textContent =
+    data.productoMasVendido || "-";
 
   // 🧠 VALIDAR SI HAY DATOS
   if (!data.ventasPorCategoria || data.ventasPorCategoria.length === 0) {
@@ -562,8 +594,8 @@ document.getElementById("productoMasVendido").textContent =
   }
 }
 
-// 🚀 INIT
 window.onload = () => {
+  cargarCategorias();
   cargarDashboard();
 
   if (!esAdmin()) {

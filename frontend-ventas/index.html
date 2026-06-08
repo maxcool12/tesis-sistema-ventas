@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>Sistema de Ventas</title>
@@ -13,230 +14,210 @@
 
 <body class="bg-light">
 
-<!-- NAVBAR -->
-<nav class="navbar navbar-dark bg-dark px-3">
-  <span class="navbar-brand">Sistema de Ventas</span>
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-dark bg-dark px-3">
+    <span class="navbar-brand">Sistema de Ventas</span>
 
-  <div>
-    <span id="usuarioLogueado" class="text-white me-3"></span>
+    <div>
+      <span id="usuarioLogueado" class="text-white me-3"></span>
 
-    <button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('dashboard')">
-  Dashboard
-</button>
+      <button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('dashboard')">
+        Dashboard
+      </button>
 
-<button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('productos')">
-  Productos
-</button>
+      <button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('productos')">
+        Productos
+      </button>
 
-<button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('ventas')">
-  Ventas
-</button>
+      <button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('ventas')">
+        Ventas
+      </button>
 
-<button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('historial')">
-  Historial
-</button>
+      <button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('historial')">
+        Historial
+      </button>
 
-<button class="btn btn-danger btn-sm" onclick="logout()">
-  Salir
-</button>
-  </div>
-</nav>
-
-<div class="container mt-4">
-
-  <!-- DASHBOARD -->
-  <div id="dashboard">
-    <h3>Dashboard</h3>
-
-    <div class="row">
-      <div class="col-md-6 mt-3">
-  <div class="card p-3 text-center shadow-sm">
-    <h5>Cantidad de Ventas</h5>
-    <h2 id="cantidadVentas">0</h2>
-  </div>
-</div>
-
-<div class="col-md-6 mt-3">
-  <div class="card p-3 text-center shadow-sm">
-    <h5>Producto Más Vendido</h5>
-    <h2 id="productoMasVendido">-</h2>
-  </div>
-</div>
-
-      <div class="col-md-6">
-        <div class="card p-3 text-center shadow-sm">
-          <h5>Ingresos Totales</h5>
-          <h2 id="totalIngresos">$0</h2>
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="card p-3 text-center shadow-sm">
-          <h5>Productos Vendidos</h5>
-          <h2 id="totalProductos">0</h2>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- GRAFICO -->
-    <div class="card p-3 mt-4 shadow-sm">
-      <h5>Ventas por Categoría</h5>
-      <canvas id="graficoCategorias"></canvas>
-    </div>
-
-    <!-- RESUMEN -->
-    <div class="card p-3 mt-3 shadow-sm">
-      <h5>Resumen por Categoría</h5>
-      <div id="resumenCategorias"></div>
-    </div>
-  </div>
-
-  <!-- PRODUCTOS -->
-  <div id="productos" style="display:none;">
-  <h3>Gestión de Productos</h3>
-  
-  <button
-  class="btn btn-secondary mb-3"
-  onclick="mostrarInactivos()">
-  Ver Productos Inactivos
-</button>
-
-<div
-  id="productosInactivos"
-  class="row">
-</div>
-  <div class="card p-3 shadow-sm mb-4">
-    <input id="nombreProducto" class="form-control mb-2" placeholder="Nombre">
-    <input id="precioProducto" class="form-control mb-2" placeholder="Precio">
-    <input id="stockProducto" class="form-control mb-2" placeholder="Stock">
-
-    <select id="categoriaProducto" class="form-control mb-2"></select>
-
-    <button id="btnGuardarProducto" class="btn btn-primary" onclick="guardarProducto()">
-      Guardar Producto
-    </button>
-  </div>
-  <input
-  type="text"
-  id="buscarProducto"
-  class="form-control mb-3"
-  placeholder="Buscar producto..."
-  onkeyup="cargarProductos()">
-  <h4>Productos Registrados</h4>
-
-  <div id="listaProductos" class="row"></div>
-</div>
-<div class="modal fade" id="modalEditarProducto" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title">Editar Producto</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal">
-        </button>
-      </div>
-
-      <div class="modal-body">
-
-        <input
-          type="hidden"
-          id="editarId">
-
-        <input
-          type="text"
-          id="editarNombre"
-          class="form-control mb-2"
-          placeholder="Nombre">
-
-        <input
-          type="number"
-          id="editarPrecio"
-          class="form-control mb-2"
-          placeholder="Precio">
-
-        <input
-          type="number"
-          id="editarStock"
-          class="form-control mb-2"
-          placeholder="Stock">
-
-        <select
-          id="editarCategoria"
-          class="form-control">
-        </select>
-
-      </div>
-
-      <div class="modal-footer">
-        <button
-          class="btn btn-primary"
-          onclick="guardarEdicionProducto()">
-          Guardar Cambios
-        </button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-  <!-- VENTAS -->
-  <div id="ventas" style="display:none;">
-    <h3>Registrar Venta</h3>
-
-    <div class="card p-3 mb-3 shadow-sm">
-      <select id="productoVenta" class="form-control mb-2"></select>
-
-      <input id="cantidadVenta" class="form-control mb-2" placeholder="Cantidad">
-
-      <button class="btn btn-primary" onclick="agregarAlCarrito()">
-        Agregar al Carrito
+      <button class="btn btn-danger btn-sm" onclick="logout()">
+        Salir
       </button>
     </div>
+  </nav>
 
-    <div class="card p-3 mb-3 shadow-sm">
-      <h5>Carrito</h5>
-      <ul id="carrito" class="list-group"></ul>
+  <div class="container mt-4">
+
+    <!-- DASHBOARD -->
+    <div id="dashboard">
+      <h3>Dashboard</h3>
+
+      <div class="row">
+        <div class="col-md-6 mt-3">
+          <div class="card p-3 text-center shadow-sm">
+            <h5>Cantidad de Ventas</h5>
+            <h2 id="cantidadVentas">0</h2>
+          </div>
+        </div>
+
+        <div class="col-md-6 mt-3">
+          <div class="card p-3 text-center shadow-sm">
+            <h5>Producto Más Vendido</h5>
+            <h2 id="productoMasVendido">-</h2>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card p-3 text-center shadow-sm">
+            <h5>Ingresos Totales</h5>
+            <h2 id="totalIngresos">$0</h2>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card p-3 text-center shadow-sm">
+            <h5>Productos Vendidos</h5>
+            <h2 id="totalProductos">0</h2>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- GRAFICO -->
+      <div class="card p-3 mt-4 shadow-sm">
+        <h5>Ventas por Categoría</h5>
+        <canvas id="graficoCategorias"></canvas>
+      </div>
+
+      <!-- RESUMEN -->
+      <div class="card p-3 mt-3 shadow-sm">
+        <h5>Resumen por Categoría</h5>
+        <div id="resumenCategorias"></div>
+      </div>
     </div>
 
-    <button class="btn btn-success w-100" onclick="realizarVenta()">
-      Finalizar Venta
-    </button>
+    <!-- PRODUCTOS -->
+    <div id="productos" style="display:none;">
+      <h3>Gestión de Productos</h3>
+
+      <button class="btn btn-secondary mb-3" onclick="mostrarInactivos()">
+        Ver Productos Inactivos
+      </button>
+
+      <div id="productosInactivos" class="row">
+      </div>
+      <div class="card p-3 shadow-sm mb-4">
+        <input id="nombreProducto" class="form-control mb-2" placeholder="Nombre">
+        <input id="precioProducto" class="form-control mb-2" placeholder="Precio">
+        <input id="stockProducto" class="form-control mb-2" placeholder="Stock">
+
+        <select id="categoriaProducto" class="form-control mb-2"></select>
+
+        <button id="btnGuardarProducto" class="btn btn-primary" onclick="guardarProducto()">
+          Guardar Producto
+        </button>
+      </div>
+      <input type="text" id="buscarProducto" class="form-control mb-3" placeholder="Buscar producto..."
+        onkeyup="cargarProductos()">
+
+        <select
+  id="filtroCategoria"
+  class="form-control mb-3"
+  onchange="cargarProductos()">
+  <option value="">Todas las categorías</option>
+</select>
+
+      <h4>Productos Registrados</h4>
+
+      <div id="listaProductos" class="row"></div>
+    </div>
+    <div class="modal fade" id="modalEditarProducto" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h5 class="modal-title">Editar Producto</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal">
+            </button>
+          </div>
+
+          <div class="modal-body">
+
+            <input type="hidden" id="editarId">
+
+            <input type="text" id="editarNombre" class="form-control mb-2" placeholder="Nombre">
+
+            <input type="number" id="editarPrecio" class="form-control mb-2" placeholder="Precio">
+
+            <input type="number" id="editarStock" class="form-control mb-2" placeholder="Stock">
+
+            <select id="editarCategoria" class="form-control">
+            </select>
+
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-primary" onclick="guardarEdicionProducto()">
+              Guardar Cambios
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- VENTAS -->
+    <div id="ventas" style="display:none;">
+      <h3>Registrar Venta</h3>
+
+      <div class="card p-3 mb-3 shadow-sm">
+        <select id="productoVenta" class="form-control mb-2"></select>
+
+        <input id="cantidadVenta" class="form-control mb-2" placeholder="Cantidad">
+
+        <button class="btn btn-primary" onclick="agregarAlCarrito()">
+          Agregar al Carrito
+        </button>
+      </div>
+
+      <div class="card p-3 mb-3 shadow-sm">
+        <h5>Carrito</h5>
+        <ul id="carrito" class="list-group"></ul>
+      </div>
+
+      <button class="btn btn-success w-100" onclick="realizarVenta()">
+        Finalizar Venta
+      </button>
+    </div>
+    <div id="historial" style="display:none;">
+
+      <h3>Historial de Ventas</h3>
+
+      <div class="card p-3 shadow-sm">
+
+        <table class="table table-striped">
+
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+
+          <tbody id="tablaHistorial">
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
   </div>
-  <div id="historial" style="display:none;">
 
-  <h3>Historial de Ventas</h3>
-
-  <div class="card p-3 shadow-sm">
-
-    <table class="table table-striped">
-
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Producto</th>
-          <th>Cantidad</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-
-      <tbody id="tablaHistorial">
-      </tbody>
-
-    </table>
-
-  </div>
-
-</div>
-
-</div>
-
-<!-- APP -->
-<script src="app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- APP -->
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
+
 </html>
