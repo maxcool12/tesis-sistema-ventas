@@ -76,6 +76,13 @@ export class VentasService {
     const detalles = await this.detalleRepo.find({
       relations: ['producto', 'producto.categoria'],
     });
+    const productosActivos = await this.productoRepo.count({
+      where: { activo: true },
+    });
+
+    const productosInactivos = await this.productoRepo.count({
+      where: { activo: false },
+    });
 
     let totalIngresos = 0;
     let totalProductos = 0;
@@ -110,19 +117,21 @@ export class VentasService {
       total: categorias[c]
     }));
     const productoMasVendido =
-  Object.keys(productosVendidos).length > 0
-    ? Object.entries(productosVendidos)
-        .sort((a: any, b: any) => b[1] - a[1])[0][0]
-    : "Sin ventas";
+      Object.keys(productosVendidos).length > 0
+        ? Object.entries(productosVendidos)
+          .sort((a: any, b: any) => b[1] - a[1])[0][0]
+        : "Sin ventas";
 
-cantidadVentas = await this.ventaRepo.count();
+    cantidadVentas = await this.ventaRepo.count();
 
     return {
-  totalIngresos,
-  totalProductos,
-  cantidadVentas,
-  productoMasVendido,
-  ventasPorCategoria
-};
+      totalIngresos,
+      totalProductos,
+      cantidadVentas,
+      productoMasVendido,
+      productosActivos,
+      productosInactivos,
+      ventasPorCategoria
+    };
   }
 }

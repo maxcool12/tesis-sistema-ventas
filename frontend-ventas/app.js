@@ -118,7 +118,7 @@ async function cargarProductos() {
       ?.toLowerCase() || "";
 
   const categoriaSeleccionada =
-  document.getElementById("filtroCategoria")?.value || "";
+    document.getElementById("filtroCategoria")?.value || "";
 
   const contenedor =
     document.getElementById("listaProductos");
@@ -128,20 +128,20 @@ async function cargarProductos() {
   contenedor.innerHTML = "";
 
   productos
-  .filter(producto => {
+    .filter(producto => {
 
-    const coincideNombre =
-      producto.nombre
-        .toLowerCase()
-        .includes(textoBusqueda);
+      const coincideNombre =
+        producto.nombre
+          .toLowerCase()
+          .includes(textoBusqueda);
 
-    const coincideCategoria =
-      categoriaSeleccionada === "" ||
-      producto.categoria?.id == categoriaSeleccionada;
+      const coincideCategoria =
+        categoriaSeleccionada === "" ||
+        producto.categoria?.id == categoriaSeleccionada;
 
-    return coincideNombre && coincideCategoria;
-  })
-  .forEach(producto => {
+      return coincideNombre && coincideCategoria;
+    })
+    .forEach(producto => {
 
       let colorStock = "success";
       let estadoStock = "Stock Alto";
@@ -328,66 +328,97 @@ async function guardarEdicionProducto() {
 }
 async function mostrarInactivos() {
 
-  const res = await fetch(
-    `${API}/productos/todos`
-  );
+  const res = await fetch(`${API}/productos/todos`);
 
   const productos = await res.json();
 
   const inactivos =
-    productos.filter(
-      p => !p.activo
-    );
+    productos.filter(p => !p.activo);
 
   const contenedor =
-    document.getElementById(
-      "productosInactivos"
-    );
+    document.getElementById("productosInactivos");
 
   contenedor.innerHTML = "";
 
-  inactivos.forEach(prod => {
+  if (inactivos.length === 0) {
 
-    contenedor.innerHTML += `
-      <div class="col-md-4 mb-3">
-        <div class="card border-secondary">
+    contenedor.innerHTML = `
+            <div class="alert alert-info">
 
-          <div class="card-body">
+                No existen productos inactivos.
 
-            <h5>${prod.nombre}</h5>
+            </div>
+        `;
 
-            <p>
-              Precio:
-              $${prod.precio}
-            </p>
+  } else {
 
-            <button
-              class="btn btn-success"
-              onclick="reactivarProducto(${prod.id})">
+    inactivos.forEach(prod => {
 
-              Reactivar
+      contenedor.innerHTML += `
 
-            </button>
+                <div class="col-md-4 mb-3">
 
-          </div>
+                    <div class="card border-danger shadow-sm">
 
-        </div>
-      </div>
-    `;
-  });
+                        <div class="card-body">
+
+                            <h5>${prod.nombre}</h5>
+
+                            <p>
+                                Precio:
+                                $${prod.precio}
+                            </p>
+
+                            <span
+                                class="badge bg-danger">
+
+                                INACTIVO
+
+                            </span>
+
+                            <hr>
+
+                            <button
+                                class="btn btn-success w-100"
+                                onclick="reactivarProducto(${prod.id})">
+
+                                Reactivar
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `;
+
+    });
+
+  }
+
+  const modal =
+    new bootstrap.Modal(
+      document.getElementById("modalInactivos")
+    );
+
+  modal.show();
+
 }
 async function reactivarProducto(id) {
 
-  await fetch(
-    `${API}/productos/${id}/reactivar`,
-    {
-      method: "PUT"
-    }
-  );
+    await fetch(
+        `${API}/productos/${id}/reactivar`,
+        {
+            method: "PUT"
+        }
+    );
 
-  cargarProductos();
+    cargarProductos();
 
-  mostrarInactivos();
+    mostrarInactivos();
+
 }
 
 // 📂 CATEGORÍAS
@@ -555,6 +586,12 @@ async function cargarDashboard() {
 
   document.getElementById("productoMasVendido").textContent =
     data.productoMasVendido || "-";
+
+  document.getElementById("productosActivos").textContent =
+    data.productosActivos || 0;
+
+  document.getElementById("cantidadProductosInactivos").textContent =
+  data.productosInactivos;
 
   // 🧠 VALIDAR SI HAY DATOS
   if (!data.ventasPorCategoria || data.ventasPorCategoria.length === 0) {
