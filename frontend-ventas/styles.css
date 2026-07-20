@@ -1,0 +1,49 @@
+body{
+    background:#f4f6f9;
+    font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+}
+
+.navbar{
+    box-shadow:0 3px 12px rgba(0,0,0,.15);
+}
+
+.card{
+    border:none;
+    border-radius:15px;
+    transition:.25s;
+}
+
+.card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 10px 25px rgba(0,0,0,.15);
+}
+
+.btn{
+    border-radius:10px;
+}
+
+.form-control,
+.form-select{
+    border-radius:10px;
+}
+
+.card-header{
+    border-radius:15px 15px 0 0 !important;
+}
+
+h3{
+    font-weight:700;
+}
+
+.badge{
+    font-size:.85rem;
+}
+.card-producto{
+    transition: .25s;
+    cursor:pointer;
+}
+
+.card-producto:hover{
+    transform: translateY(-5px);
+    box-shadow:0 .7rem 1.4rem rgba(0,0,0,.15);
+}

@@ -1,45 +1,264 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+
 <head>
-  <title>Login</title>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Sistema de Ventas - Login</title>
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <style>
+    body {
+
+      background: linear-gradient(135deg, #0d6efd, #0b3d91);
+
+      height: 100vh;
+
+      display: flex;
+
+      justify-content: center;
+
+      align-items: center;
+
+      font-family: Arial, Helvetica, sans-serif;
+
+    }
+
+    .login-card {
+
+      width: 420px;
+
+      border: none;
+
+      border-radius: 18px;
+
+      box-shadow: 0px 15px 35px rgba(0, 0, 0, .25);
+
+      overflow: hidden;
+
+    }
+
+    .login-header {
+
+      background: #0d6efd;
+
+      color: white;
+
+      text-align: center;
+
+      padding: 35px;
+
+    }
+
+    .login-header i {
+
+      font-size: 60px;
+
+      margin-bottom: 10px;
+
+    }
+
+    .login-body {
+
+      padding: 35px;
+
+      background: white;
+
+    }
+
+    .form-control {
+
+      height: 48px;
+
+      border-radius: 10px;
+
+    }
+
+    .btn-login {
+
+      height: 48px;
+
+      border-radius: 10px;
+
+      font-weight: bold;
+
+    }
+
+    .footer-login {
+
+      text-align: center;
+
+      color: gray;
+
+      font-size: 13px;
+
+      margin-top: 20px;
+
+    }
+  </style>
+
 </head>
 
-<body class="bg-dark d-flex justify-content-center align-items-center vh-100">
+<body>
 
-<div class="card p-4" style="width:300px;">
-  <h4>Login</h4>
+  <div class="card login-card">
 
-  <input id="email" class="form-control mb-2" placeholder="Email">
-  <input id="password" type="password" class="form-control mb-3" placeholder="Password">
+    <div class="login-header">
 
-  <button class="btn btn-primary" onclick="login()">Ingresar</button>
+      <i class="bi bi-shop"></i>
 
-  <p id="error" class="text-danger mt-2"></p>
-</div>
+      <h3 class="mb-1">
 
-<script>
-async function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+        Sistema de Ventas
 
-  const res = await fetch("http://localhost:3001/usuarios/login", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ email, password })
-  });
+      </h3>
 
-  if (res.ok) {
-    const user = await res.json();
+      <small>
 
-    localStorage.setItem("usuario", JSON.stringify(user));
+        Trabajo Final Integrador
 
-    window.location.href = "index.html";
-  } else {
-    document.getElementById("error").innerText = "Login incorrecto";
-  }
+      </small>
+
+    </div>
+
+    <div class="login-body">
+
+      <div class="mb-3">
+
+        <label class="form-label fw-bold">
+
+          Correo electrónico
+
+        </label>
+
+        <input id="email" class="form-control" placeholder="Ingrese su correo">
+
+      </div>
+
+      <div class="mb-4">
+
+        <label class="form-label fw-bold">
+
+          Contraseña
+
+        </label>
+
+        <input id="password" type="password" class="form-control" placeholder="Ingrese su contraseña">
+
+      </div>
+
+      <button class="btn btn-primary w-100 btn-login" onclick="login()">
+
+        <i class="bi bi-box-arrow-in-right me-2"></i>
+
+        Iniciar Sesión
+
+      </button>
+
+      <p id="error" class="text-danger text-center mt-3 fw-bold">
+      </p>
+
+      <div class="footer-login">
+
+        © 2026 - Sistema de Gestión de Ventas
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    async function login() {
+
+      const email =
+        document.getElementById("email").value;
+
+      const password =
+        document.getElementById("password").value;
+
+      const res =
+        await fetch(
+          "http://localhost:3001/usuarios/login",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              email,
+              password
+            })
+          });
+
+      if (res.ok) {
+
+        const user =
+          await res.json();
+
+        localStorage.setItem(
+          "usuario",
+          JSON.stringify(user)
+        );
+
+        window.location.href =
+          "index.html";
+
+      } else {
+
+        document.getElementById("error")
+          .innerText =
+          "Correo o contraseña incorrectos.";
+
+      }
+
+    }
+
+  </script>
+<style>
+
+.nav-btn{
+
+    border-radius:10px;
+
+    transition:.25s;
+
+    color:white;
+
+    border:none;
+
+    padding:8px 16px;
+
 }
-</script>
 
+.nav-btn:hover{
+
+    background:white !important;
+
+    color:#0d6efd !important;
+
+}
+
+.nav-btn.activo{
+
+    background:white !important;
+
+    color:#0d6efd !important;
+
+    font-weight:bold;
+
+    box-shadow:0 4px 10px rgba(0,0,0,.15);
+
+}
+
+</style>
 </body>
+
 </html>

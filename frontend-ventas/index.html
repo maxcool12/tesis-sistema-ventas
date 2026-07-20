@@ -10,222 +10,698 @@
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 
 <body class="bg-light">
 
   <!-- NAVBAR -->
-  <nav class="navbar navbar-dark bg-dark px-3">
-    <span class="navbar-brand">Sistema de Ventas</span>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
 
-    <div>
-      <span id="usuarioLogueado" class="text-white me-3"></span>
+  <div class="container-fluid">
 
-      <button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('dashboard')">
-        Dashboard
-      </button>
+    <a class="navbar-brand fw-bold" href="#">
 
-      <button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('productos')">
-        Productos
-      </button>
+      <i class="bi bi-shop me-2"></i>
 
-      <button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('ventas')">
-        Ventas
-      </button>
+      Sistema de Ventas
 
-      <button class="btn btn-outline-light btn-sm" onclick="mostrarSeccion('historial')">
-        Historial
-      </button>
+    </a>
 
-      <button class="btn btn-danger btn-sm" onclick="logout()">
-        Salir
-      </button>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#menuNavbar">
+
+      <span class="navbar-toggler-icon"></span>
+
+    </button>
+
+    <div
+      class="collapse navbar-collapse"
+      id="menuNavbar">
+
+      <ul class="navbar-nav me-auto">
+
+        <li class="nav-item">
+
+          <button
+            id="btnDashboard"
+            class="btn btn-primary nav-btn me-2"
+            onclick="mostrarSeccion('dashboard')">
+
+            <i class="bi bi-speedometer2 me-1"></i>
+
+            Dashboard
+
+          </button>
+
+        </li>
+
+        <li class="nav-item">
+
+          <button
+            id="btnProductos"
+            class="btn btn-primary nav-btn me-2"
+            onclick="mostrarSeccion('productos')">
+
+            <i class="bi bi-box-seam me-1"></i>
+
+            Productos
+
+          </button>
+
+        </li>
+
+        <li class="nav-item">
+
+          <button
+            id="btnVentas"
+            class="btn btn-primary nav-btn me-2"
+            onclick="mostrarSeccion('ventas')">
+
+            <i class="bi bi-cart-check me-1"></i>
+
+            Ventas
+
+          </button>
+
+        </li>
+
+        <li class="nav-item">
+
+          <button
+            id="btnHistorial"
+            class="btn btn-primary nav-btn"
+            onclick="mostrarSeccion('historial')">
+
+            <i class="bi bi-clock-history me-1"></i>
+
+            Historial
+
+          </button>
+
+        </li>
+
+      </ul>
+
+      <div class="d-flex align-items-center">
+
+        <span
+          class="text-white me-3 fw-semibold">
+
+          <i class="bi bi-person-circle me-1"></i>
+
+          <span id="usuarioLogueado"></span>
+
+        </span>
+
+        <button
+          class="btn btn-danger"
+          onclick="logout()">
+
+          <i class="bi bi-box-arrow-right me-1"></i>
+
+          Salir
+
+        </button>
+
+      </div>
+
     </div>
-  </nav>
 
+  </div>
+
+</nav>
   <div class="container mt-4">
 
     <!-- DASHBOARD -->
     <div id="dashboard">
-      <h3>Dashboard</h3>
+
+      <h3 class="mb-4">Dashboard</h3>
 
       <div class="row">
-        <div class="col-md-6 mt-3">
-          <div class="card p-3 text-center shadow-sm">
-            <h5>Cantidad de Ventas</h5>
-            <h2 id="cantidadVentas">0</h2>
+
+        <!-- Ingresos -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card border-0 shadow-lg h-100">
+            <div class="card-body d-flex align-items-center p-4">
+
+              <div class="bg-success text-white rounded-circle p-3 me-3">
+                <i class="bi bi-cash-stack fs-2"></i>
+              </div>
+
+              <div>
+                <h6 class="text-muted mb-1">Ingresos Totales</h6>
+                <h2 id="totalIngresos" class="fw-bold mb-0">$0</h2>
+              </div>
+
+            </div>
           </div>
         </div>
 
-        <div class="col-md-6 mt-3">
-          <div class="card p-3 text-center shadow-sm">
-            <h5>Producto Más Vendido</h5>
-            <h2 id="productoMasVendido">-</h2>
+        <!-- Productos Vendidos -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card border-0 shadow-lg h-100">
+            <div class="card-body d-flex align-items-center p-4">
+
+              <div class="bg-primary text-white rounded-circle p-3 me-3">
+                <i class="bi bi-box-seam fs-2"></i>
+              </div>
+
+              <div>
+                <h6 class="text-muted mb-1">Productos Vendidos</h6>
+                <h2 id="totalProductos" class="fw-bold mb-0">0</h2>
+              </div>
+
+            </div>
           </div>
         </div>
 
-        <div class="col-md-6">
-          <div class="card p-3 text-center shadow-sm">
-            <h5>Ingresos Totales</h5>
-            <h2 id="totalIngresos">$0</h2>
+        <!-- Cantidad de Ventas -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card border-0 shadow-lg h-100">
+            <div class="card-body d-flex align-items-center p-4">
+
+              <div class="bg-warning text-white rounded-circle p-3 me-3">
+                <i class="bi bi-cart-check fs-2"></i>
+              </div>
+
+              <div>
+                <h6 class="text-muted mb-1">Cantidad de Ventas</h6>
+                <h2 id="cantidadVentas" class="fw-bold mb-0">0</h2>
+              </div>
+
+            </div>
           </div>
         </div>
 
-        <div class="col-md-6">
-          <div class="card p-3 text-center shadow-sm">
-            <h5>Productos Vendidos</h5>
-            <h2 id="totalProductos">0</h2>
-          </div>
-        </div>
-        <div class="col-md-6 mt-3">
-          <div class="card p-3 text-center shadow-sm border-success">
-            <h5>Productos Activos</h5>
-            <h2 id="productosActivos">0</h2>
+        <!-- Producto Más Vendido -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card border-0 shadow-lg h-100">
+            <div class="card-body d-flex align-items-center p-4">
+
+              <div class="bg-info text-white rounded-circle p-3 me-3">
+                <i class="bi bi-star-fill fs-2"></i>
+              </div>
+
+              <div>
+                <h6 class="text-muted mb-1">Producto Más Vendido</h6>
+                <h2 id="productoMasVendido" class="fw-bold mb-0">-</h2>
+              </div>
+
+            </div>
           </div>
         </div>
 
-        <div class="col-md-6 mt-3">
-          <div class="card p-3 text-center shadow-sm border-secondary">
-            <h5>Productos Inactivos</h5>
-            <h2 id="cantidadProductosInactivos">0</h2>
+        <!-- Productos Activos -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card border-0 shadow-lg h-100">
+            <div class="card-body d-flex align-items-center p-4">
+
+              <div class="bg-success text-white rounded-circle p-3 me-3">
+                <i class="bi bi-check-circle-fill fs-2"></i>
+              </div>
+
+              <div>
+                <h6 class="text-muted mb-1">Productos Activos</h6>
+                <h2 id="productosActivos" class="fw-bold mb-0">0</h2>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Productos Inactivos -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card border-0 shadow-lg h-100">
+            <div class="card-body d-flex align-items-center p-4">
+
+              <div class="bg-danger text-white rounded-circle p-3 me-3">
+                <i class="bi bi-x-circle-fill fs-2"></i>
+              </div>
+
+              <div>
+                <h6 class="text-muted mb-1">Productos Inactivos</h6>
+                <h2 id="cantidadProductosInactivos" class="fw-bold mb-0">0</h2>
+              </div>
+
+            </div>
           </div>
         </div>
 
       </div>
 
       <!-- GRAFICO -->
-      <div class="card p-3 mt-4 shadow-sm">
-        <h5>Ventas por Categoría</h5>
-        <canvas id="graficoCategorias"></canvas>
+      <div class="card border-0 shadow-lg mt-3">
+
+        <div class="card-header bg-white">
+          <h5 class="mb-0">
+            <i class="bi bi-bar-chart-fill me-2"></i>
+            Ventas por Categoría
+          </h5>
+        </div>
+
+        <div class="card-body">
+          <canvas id="graficoCategorias"></canvas>
+        </div>
+
       </div>
 
       <!-- RESUMEN -->
-      <div class="card p-3 mt-3 shadow-sm">
-        <h5>Resumen por Categoría</h5>
-        <div id="resumenCategorias"></div>
+      <div class="card border-0 shadow-lg mt-4">
+
+        <div class="card-header bg-white">
+          <h5 class="mb-0">
+            <i class="bi bi-clipboard-data me-2"></i>
+            Resumen por Categoría
+          </h5>
+        </div>
+
+        <div class="card-body">
+          <div id="resumenCategorias"></div>
+        </div>
+
       </div>
+
     </div>
 
     <!-- PRODUCTOS -->
+    <!-- PRODUCTOS -->
     <div id="productos" style="display:none;">
-      <h3>Gestión de Productos</h3>
 
+      <div class="d-flex justify-content-between align-items-center mb-4">
 
+        <h3 class="mb-0">
+          <i class="bi bi-box-seam me-2"></i>
+          Gestión de Productos
+        </h3>
 
-      <button class="btn btn-outline-secondary mb-3" onclick="mostrarInactivos()">
+        <button class="btn btn-outline-secondary" onclick="mostrarInactivos()">
 
-        📦 Productos Inactivos
+          <i class="bi bi-archive me-2"></i>
+          Productos Inactivos
 
-      </button>
+        </button>
 
+      </div>
 
-      <input id="nombreProducto" class="form-control mb-2" placeholder="Nombre">
-      <input id="precioProducto" class="form-control mb-2" placeholder="Precio">
-      <input id="stockProducto" class="form-control mb-2" placeholder="Stock">
+      <!-- FORMULARIO -->
+      <div class="card shadow-lg border-0 mb-4">
 
-      <select id="categoriaProducto" class="form-control mb-2"></select>
+        <div class="card-header bg-primary text-white">
 
-      <button id="btnGuardarProducto" class="btn btn-primary" onclick="guardarProducto()">
-        Guardar Producto
-      </button>
-    </div>
-    <input type="text" id="buscarProducto" class="form-control mb-3" placeholder="Buscar producto..."
-      onkeyup="cargarProductos()">
-
-    <select id="filtroCategoria" class="form-control mb-3" onchange="cargarProductos()">
-      <option value="">Todas las categorías</option>
-    </select>
-
-    <h4>Productos Registrados</h4>
-
-    <div id="listaProductos" class="row"></div>
-  </div>
-  <div class="modal fade" id="modalEditarProducto" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-
-        <div class="modal-header">
-          <h5 class="modal-title">Editar Producto</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal">
-          </button>
-        </div>
-
-        <div class="modal-body">
-
-          <input type="hidden" id="editarId">
-
-          <input type="text" id="editarNombre" class="form-control mb-2" placeholder="Nombre">
-
-          <input type="number" id="editarPrecio" class="form-control mb-2" placeholder="Precio">
-
-          <input type="number" id="editarStock" class="form-control mb-2" placeholder="Stock">
-
-          <select id="editarCategoria" class="form-control">
-          </select>
+          <h5 class="mb-0">
+            <i class="bi bi-plus-circle me-2"></i>
+            Registrar Producto
+          </h5>
 
         </div>
 
-        <div class="modal-footer">
-          <button class="btn btn-primary" onclick="guardarEdicionProducto()">
-            Guardar Cambios
-          </button>
+        <div class="card-body">
+
+          <div class="row">
+
+            <div class="col-md-4 mb-3">
+
+              <label class="form-label fw-bold">
+                Nombre
+              </label>
+
+              <input id="nombreProducto" class="form-control" placeholder="Nombre del producto">
+
+            </div>
+
+            <div class="col-md-2 mb-3">
+
+              <label class="form-label fw-bold">
+                Precio
+              </label>
+
+              <input id="precioProducto" type="number" class="form-control">
+
+            </div>
+
+            <div class="col-md-2 mb-3">
+
+              <label class="form-label fw-bold">
+                Stock
+              </label>
+
+              <input id="stockProducto" type="number" class="form-control">
+
+            </div>
+
+            <div class="col-md-4 mb-3">
+
+              <label class="form-label fw-bold">
+                Categoría
+              </label>
+
+              <select id="categoriaProducto" class="form-select">
+              </select>
+
+            </div>
+
+          </div>
+
+          <div class="text-end">
+
+            <button id="btnGuardarProducto" class="btn btn-success px-4" onclick="guardarProducto()">
+
+              <i class="bi bi-save me-2"></i>
+              Guardar Producto
+
+            </button>
+
+          </div>
+
         </div>
 
       </div>
+
+      <!-- LISTA DE PRODUCTOS -->
+      <div class="card shadow-lg border-0">
+
+        <div class="card-header bg-white">
+
+          <div class="row align-items-center">
+
+            <div class="col-md-4">
+
+              <h5 class="mb-0">
+                <i class="bi bi-boxes me-2"></i>
+                Productos Registrados
+              </h5>
+
+            </div>
+
+            <div class="col-md-4">
+
+              <input type="text" id="buscarProducto" class="form-control" placeholder="🔍 Buscar producto..."
+                onkeyup="cargarProductos()">
+
+            </div>
+
+            <div class="col-md-4">
+
+              <select id="filtroCategoria" class="form-select" onchange="cargarProductos()">
+
+                <option value="">
+                  Todas las categorías
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="card-body">
+
+          <div id="listaProductos" class="row">
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
+
+    <!-- MODAL EDITAR -->
+    <div class="modal fade" id="modalEditarProducto" tabindex="-1">
+
+      <div class="modal-dialog">
+
+        <div class="modal-content">
+
+          <div class="modal-header">
+
+            <h5 class="modal-title">
+
+              <i class="bi bi-pencil-square me-2"></i>
+
+              Editar Producto
+
+            </h5>
+
+            <button type="button" class="btn-close" data-bs-dismiss="modal">
+            </button>
+
+          </div>
+
+          <div class="modal-body">
+
+            <input type="hidden" id="editarId">
+
+            <div class="mb-3">
+
+              <label class="form-label fw-bold">
+                Nombre
+              </label>
+
+              <input type="text" id="editarNombre" class="form-control">
+
+            </div>
+
+            <div class="mb-3">
+
+              <label class="form-label fw-bold">
+                Precio
+              </label>
+
+              <input type="number" id="editarPrecio" class="form-control">
+
+            </div>
+
+            <div class="mb-3">
+
+              <label class="form-label fw-bold">
+                Stock
+              </label>
+
+              <input type="number" id="editarStock" class="form-control">
+
+            </div>
+
+            <div class="mb-3">
+
+              <label class="form-label fw-bold">
+                Categoría
+              </label>
+
+              <select id="editarCategoria" class="form-select">
+              </select>
+
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+
+            <button class="btn btn-primary" onclick="guardarEdicionProducto()">
+
+              <i class="bi bi-check-circle me-2"></i>
+
+              Guardar Cambios
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- VENTAS -->
+    <!-- VENTAS -->
+    <div id="ventas" style="display:none;">
+
+      <h2 class="mb-4">
+        <i class="bi bi-cart-check me-2"></i>
+        Registrar Venta
+      </h2>
+
+      <div class="card shadow-lg border-0">
+
+        <div class="card-header bg-success text-white">
+
+          <h5 class="mb-0">
+            <i class="bi bi-bag-plus me-2"></i>
+            Nueva Venta
+          </h5>
+
+        </div>
+
+        <div class="card-body">
+
+          <div class="row">
+
+            <div class="col-md-6 mb-3">
+
+              <label class="form-label fw-bold">
+                Producto
+              </label>
+
+              <select id="productoVenta" class="form-select">
+              </select>
+
+            </div>
+
+            <div class="col-md-3 mb-3">
+
+              <label class="form-label fw-bold">
+                Cantidad
+              </label>
+
+              <input id="cantidadVenta" type="number" min="1" value="1" class="form-control">
+
+            </div>
+
+            <div class="col-md-3 mb-3 d-flex align-items-end">
+
+              <button class="btn btn-primary w-100" onclick="agregarAlCarrito()">
+
+                <i class="bi bi-plus-circle me-2"></i>
+
+                Agregar
+
+              </button>
+
+            </div>
+
+          </div>
+
+          <hr>
+
+          <h5 class="mb-3">
+
+            <i class="bi bi-cart3 me-2"></i>
+
+            Carrito de Compra
+
+          </h5>
+
+          <div class="table-responsive">
+
+            <table class="table table-hover align-middle">
+
+              <thead class="table-light">
+
+                <tr>
+
+                  <th>Producto</th>
+                  <th>Cantidad</th>
+                  <th>Precio Unit.</th>
+                  <th>Subtotal</th>
+                  <th></th>
+
+                </tr>
+
+              </thead>
+
+              <tbody id="carrito">
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+          <div class="text-end mt-4">
+
+            <h3 class="fw-bold">
+
+              Total:
+              <span class="text-success" id="totalCarrito">
+
+                $0
+
+              </span>
+
+            </h3>
+
+          </div>
+
+          <div class="text-end">
+
+            <button class="btn btn-success btn-lg" onclick="realizarVenta()">
+
+              <i class="bi bi-check-circle me-2"></i>
+
+              Finalizar Venta
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- HISTORIAL -->
+    <div id="historial" style="display:none;">
+
+      <h3 class="mb-4">
+        <i class="bi bi-clock-history me-2"></i>
+        Historial de Ventas
+      </h3>
+
+      <div class="card shadow-lg border-0">
+
+        <div class="card-header bg-white">
+
+          <h5 class="mb-0">
+            <i class="bi bi-receipt me-2"></i>
+            Ventas Registradas
+          </h5>
+
+        </div>
+
+        <div class="card-body">
+
+          <div class="table-responsive">
+
+            <table class="table table-striped table-hover align-middle">
+
+              <thead class="table-dark">
+
+                <tr>
+
+                  <th>Fecha</th>
+                  <th>Producto</th>
+                  <th>Cantidad</th>
+                  <th>Total</th>
+
+                </tr>
+
+              </thead>
+
+              <tbody id="tablaHistorial">
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- VENTAS -->
-  <div id="ventas" style="display:none;">
-    <h3>Registrar Venta</h3>
-
-    <div class="card p-3 mb-3 shadow-sm">
-      <select id="productoVenta" class="form-control mb-2"></select>
-
-      <input id="cantidadVenta" class="form-control mb-2" placeholder="Cantidad">
-
-      <button class="btn btn-primary" onclick="agregarAlCarrito()">
-        Agregar al Carrito
-      </button>
-    </div>
-
-    <div class="card p-3 mb-3 shadow-sm">
-      <h5>Carrito</h5>
-      <ul id="carrito" class="list-group"></ul>
-    </div>
-
-    <button class="btn btn-success w-100" onclick="realizarVenta()">
-      Finalizar Venta
-    </button>
-  </div>
-  <div id="historial" style="display:none;">
-
-    <h3>Historial de Ventas</h3>
-
-    <div class="card p-3 shadow-sm">
-
-      <table class="table table-striped">
-
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-
-        <tbody id="tablaHistorial">
-        </tbody>
-
-      </table>
-
-    </div>
-
-  </div>
-
-  </div>
-
+  <!-- MODAL PRODUCTOS INACTIVOS -->
   <div class="modal fade" id="modalInactivos" tabindex="-1">
 
     <div class="modal-dialog modal-lg">
@@ -235,6 +711,8 @@
         <div class="modal-header">
 
           <h5 class="modal-title">
+
+            <i class="bi bi-archive me-2"></i>
 
             Productos Inactivos
 
@@ -257,9 +735,32 @@
     </div>
 
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    .card-producto {
 
+      transition: .25s;
+
+      border-radius: 15px;
+
+    }
+
+    .card-producto:hover {
+
+      transform: translateY(-6px);
+
+      box-shadow: 0 .8rem 1.6rem rgba(0, 0, 0, .15);
+
+    }
+
+    .card-producto hr {
+
+      opacity: .15;
+
+    }
+  </style>
 </body>
 
 </html>
