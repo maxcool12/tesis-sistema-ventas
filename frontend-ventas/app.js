@@ -769,16 +769,7 @@ async function cargarDashboard() {
     });
   }
 }
-
-window.onload = () => {
-  cargarCategorias();
-  cargarDashboard();
-
-  if (!esAdmin()) {
-    const btn = document.getElementById("btnGuardarProducto");
-    if (btn) btn.style.display = "none";
-  }
-  function alertaExito(titulo, texto = "") {
+function alertaExito(titulo, texto = "") {
     Swal.fire({
       icon: "success",
       title: titulo,
@@ -805,17 +796,36 @@ window.onload = () => {
   }
   async function confirmar(titulo, texto = "") {
 
-    const resultado = await Swal.fire({
-      title: titulo,
-      text: texto,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Sí",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#198754",
-      cancelButtonColor: "#dc3545"
-    });
+  const resultado = await Swal.fire({
+    title: titulo,
+    text: texto,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Sí",
+    cancelButtonText: "Cancelar",
+    confirmButtonColor: "#198754",
+    cancelButtonColor: "#dc3545"
+  });
 
-    return resultado.isConfirmed;
+  return resultado.isConfirmed;
+
+}
+window.onload = () => {
+
+  cargarCategorias();
+
+  cargarProductos();
+
+  cargarProductosVenta();
+
+  cargarHistorial();
+
+  cargarDashboard();
+
+  if (!esAdmin()) {
+    const btn = document.getElementById("btnGuardarProducto");
+    if (btn) btn.style.display = "none";
   }
+
 };
+  
