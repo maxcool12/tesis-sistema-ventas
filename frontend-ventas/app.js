@@ -694,15 +694,27 @@ async function cargarHistorial() {
 
 // 📦 PRODUCTOS PARA VENTA
 async function cargarProductosVenta() {
+
   const res = await fetch(`${API}/productos`);
-  const data = await res.json();
+
+  productos = await res.json();   // ← IMPORTANTE
 
   const select = document.getElementById("productoVenta");
+
+  if (!select) return;
+
   select.innerHTML = "";
 
-  data.forEach(p => {
-    select.innerHTML += `<option value="${p.id}">${p.nombre} ($${p.precio})</option>`;
+  productos.forEach(p => {
+
+    select.innerHTML += `
+      <option value="${p.id}">
+        ${p.nombre} ($${p.precio})
+      </option>
+    `;
+
   });
+
 }
 
 // 📊 GRAFICO
