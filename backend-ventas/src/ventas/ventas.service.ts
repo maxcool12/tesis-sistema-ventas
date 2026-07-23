@@ -18,7 +18,7 @@ export class VentasService {
     private productoRepo: Repository<Producto>,
   ) { }
 
-  // 🔥 CREAR VENTA
+  
   async crearVenta(data: any) {
     const venta = this.ventaRepo.create({
       total: 0,
@@ -35,12 +35,12 @@ export class VentasService {
         throw new Error('Producto no encontrado');
       }
 
-      // ⚠️ Validar stock
+      
       if (producto.stock < item.cantidad) {
         throw new Error(`Stock insuficiente para ${producto.nombre}`);
       }
 
-      // 💥 DESCONTAR STOCK
+      
       producto.stock -= item.cantidad;
       await this.productoRepo.save(producto);
 
@@ -64,14 +64,14 @@ export class VentasService {
     return ventaGuardada;
   }
 
-  // 📋 LISTAR VENTAS
+  
   async findAll() {
     return this.ventaRepo.find({
       relations: ['detalles', 'detalles.producto'],
     });
   }
 
-  // 📊 DASHBOARD
+ 
   async getDashboard() {
     const detalles = await this.detalleRepo.find({
       relations: ['producto', 'producto.categoria'],

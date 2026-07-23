@@ -1,19 +1,18 @@
 const API = "http://localhost:3001";
 
-// 🔐 PROTEGER INDEX
 if (window.location.pathname.includes("index.html")) {
   const user = localStorage.getItem("usuario");
   if (!user) window.location.href = "login.html";
 }
 
-// 👤 USUARIO
+
 const user = JSON.parse(localStorage.getItem("usuario"));
 if (user) {
   const el = document.getElementById("usuarioLogueado");
   if (el) el.textContent = `${user.email} (${user.rol})`;
 }
 
-// 🔐 LOGIN
+
 async function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
@@ -34,35 +33,35 @@ async function login() {
   window.location.href = "index.html";
 }
 
-// 🚪 LOGOUT
+
 function logout() {
   localStorage.removeItem("usuario");
   window.location.href = "login.html";
 }
 
-// 🔥 ROLES
+
 function esAdmin() {
   return user?.rol === "admin";
 }
 
-// 📌 NAVEGACIÓN
+
 function mostrarSeccion(seccion) {
 
-  // Ocultar todas las secciones
+  
   document.getElementById("dashboard").style.display = "none";
   document.getElementById("productos").style.display = "none";
   document.getElementById("ventas").style.display = "none";
   document.getElementById("historial").style.display = "none";
 
-  // Mostrar la sección elegida
+  
   document.getElementById(seccion).style.display = "block";
 
-  // Quitar el estado activo de todos los botones
+  
   document.querySelectorAll(".nav-btn").forEach(btn => {
     btn.classList.remove("activo");
   });
 
-  // Activar el botón correspondiente
+  
   switch (seccion) {
 
     case "dashboard":
@@ -85,7 +84,7 @@ function mostrarSeccion(seccion) {
 
 }
 
-// 📦 PRODUCTOS
+
 async function guardarProducto() {
   if (!esAdmin()) {
     alert("No autorizado");
@@ -488,7 +487,7 @@ async function cargarCategorias() {
     });
   }
 
-  // SELECT DEL FILTRO
+  
   const filtro = document.getElementById("filtroCategoria");
 
   if (filtro) {
@@ -504,7 +503,7 @@ async function cargarCategorias() {
     });
   }
 }
-// 🛒 CARRITO
+
 let carrito = [];
 
 function agregarAlCarrito() {
@@ -600,7 +599,7 @@ function eliminarDelCarrito(indice) {
 
 }
 
-// 💸 VENTA
+
 async function realizarVenta() {
 
   if (carrito.length === 0) {
@@ -631,16 +630,16 @@ async function realizarVenta() {
     "La venta se realizó correctamente."
   );
 
-  // Vaciar carrito
+  
   carrito = [];
 
   actualizarCarrito();
 
-  // Limpiar formulario
+  
   document.getElementById("cantidadVenta").value = 1;
   document.getElementById("productoVenta").selectedIndex = 0;
 
-  // Actualizar información
+  
   cargarDashboard();
   cargarProductos();
   cargarHistorial();
@@ -692,7 +691,7 @@ async function cargarHistorial() {
   });
 }
 
-// 📦 PRODUCTOS PARA VENTA
+
 async function cargarProductosVenta() {
 
   const res = await fetch(`${API}/productos`);
@@ -717,7 +716,7 @@ async function cargarProductosVenta() {
 
 }
 
-// 📊 GRAFICO
+
 let grafico;
 
 async function cargarDashboard() {
@@ -744,7 +743,7 @@ async function cargarDashboard() {
   document.getElementById("cantidadProductosInactivos").textContent =
     data.productosInactivos;
 
-  // 🧠 VALIDAR SI HAY DATOS
+  
   if (!data.ventasPorCategoria || data.ventasPorCategoria.length === 0) {
     console.warn("No hay datos para el gráfico");
     return;
@@ -771,7 +770,7 @@ async function cargarDashboard() {
     }
   });
 
-  // 📋 RESUMEN
+ 
   const resumen = document.getElementById("resumenCategorias");
   if (resumen) {
     resumen.innerHTML = "";
