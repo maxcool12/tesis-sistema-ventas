@@ -4,6 +4,8 @@ import { ProductosModule } from './productos/productos.module';
 import { CategoriasModule } from './categorias/categorias.module';
 import { VentasModule } from './ventas/ventas.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
+import { ClientesModule } from './clientes/clientes.module';
+import { MetodoPagoModule } from './metodo-pago/metodo-pago.module';
 
 
 @Module({
@@ -22,6 +24,8 @@ import { UsuariosModule } from './usuarios/usuarios.module';
     CategoriasModule,
     VentasModule,
     UsuariosModule,
-  ],
+    ClientesModule,
+    MetodoPagoModule,
+    ],
 })
 export class AppModule {}

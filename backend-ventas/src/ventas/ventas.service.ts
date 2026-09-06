@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm';
 import { Venta } from './venta.entity';
 import { DetalleVenta } from './detalle-venta.entity';
 import { Producto } from '../productos/producto.entity';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
+import { Cliente } from '../clientes/entities/cliente.entity';
+import { MetodoPago } from '../metodo-pago/metodo-pago.entity';
+import { CrearVentaDto } from './dto/crear-venta.dto';
 
 @Injectable()
 export class VentasService {
@@ -16,66 +19,246 @@ export class VentasService {
 
     @InjectRepository(Producto)
     private productoRepo: Repository<Producto>,
+
+    @InjectRepository(Cliente)
+    private clienteRepo: Repository<Cliente>,
+
+    @InjectRepository(MetodoPago)
+    private metodoPagoRepo: Repository<MetodoPago>,
+
+    private dataSource: DataSource,
   ) { }
 
-  
-  async crearVenta(data: any) {
-    const venta = this.ventaRepo.create({
-      total: 0,
-    });
 
-    const detalles: DetalleVenta[] = [];
 
-    for (const item of data.productos) {
-      const producto = await this.productoRepo.findOne({
-        where: { id: item.productoId },
+
+
+  async crearVenta(data: CrearVentaDto) {
+    return await this.dataSource.transaction(async (manager) => {
+
+
+      const cliente = await manager.getRepository(Cliente).findOne({
+        where: {
+          id: data.clienteId,
+          activo: true,
+        },
       });
 
-      if (!producto) {
-        throw new Error('Producto no encontrado');
+      if (!cliente) {
+        throw new BadRequestException(
+          'Cliente no encontrado o inactivo',
+        );
       }
 
-      
-      if (producto.stock < item.cantidad) {
-        throw new Error(`Stock insuficiente para ${producto.nombre}`);
+
+      const metodoPago = await manager.getRepository(MetodoPago).findOne({
+        where: {
+          id: data.metodoPagoId,
+          activo: true,
+        },
+      });
+
+      if (!metodoPago) {
+        throw new BadRequestException(
+          'Método de pago no encontrado o inactivo',
+        );
       }
 
-      
-      producto.stock -= item.cantidad;
-      await this.productoRepo.save(producto);
 
-      const detalle = new DetalleVenta();
-      detalle.producto = producto;
-      detalle.cantidad = item.cantidad;
-      detalle.precio_unitario = Number(producto.precio);
-      detalle.total = Number(producto.precio) * item.cantidad;
+      const productosIds = data.productos.map(
+        (item) => item.productoId,
+      );
 
-      venta.total += Number(producto.precio) * item.cantidad;
-      detalles.push(detalle);
-    }
 
-    const ventaGuardada = await this.ventaRepo.save(venta);
+      const idsRepetidos = productosIds.filter(
+        (id, index) => productosIds.indexOf(id) !== index,
+      );
 
-    for (const detalle of detalles) {
-      detalle.venta = ventaGuardada;
-      await this.detalleRepo.save(detalle);
-    }
+      if (idsRepetidos.length > 0) {
+        throw new BadRequestException(
+          'No se puede repetir un producto dentro de la misma venta',
+        );
+      }
 
-    return ventaGuardada;
-  }
 
-  
-  async findAll() {
-    return this.ventaRepo.find({
-      relations: ['detalles', 'detalles.producto'],
+      const venta = manager.getRepository(Venta).create({
+        total: 0,
+        cliente,
+        metodoPago,
+      });
+
+
+      const detalles: DetalleVenta[] = [];
+
+
+      for (const item of data.productos) {
+
+        const producto = await manager.getRepository(Producto).findOne({
+          where: {
+            id: item.productoId,
+            activo: true,
+          },
+        });
+
+        if (!producto) {
+          throw new BadRequestException(
+            'Producto no encontrado o inactivo',
+          );
+        }
+
+
+        if (producto.stock < item.cantidad) {
+          throw new BadRequestException(
+            `Stock insuficiente para ${producto.nombre}`,
+          );
+        }
+
+
+        producto.stock -= item.cantidad;
+
+        await manager.getRepository(Producto).save(producto);
+
+
+        const detalle = manager
+          .getRepository(DetalleVenta)
+          .create({
+            producto,
+            cantidad: item.cantidad,
+            precio_unitario: Number(producto.precio),
+            total: Number(producto.precio) * item.cantidad,
+          });
+
+
+        venta.total +=
+          Number(producto.precio) * item.cantidad;
+
+        detalles.push(detalle);
+      }
+
+
+      const ventaGuardada = await manager
+        .getRepository(Venta)
+        .save(venta);
+
+
+      for (const detalle of detalles) {
+
+        detalle.venta = ventaGuardada;
+
+        await manager
+          .getRepository(DetalleVenta)
+          .save(detalle);
+      }
+
+      return ventaGuardada;
     });
   }
 
- 
-  async getDashboard() {
-    const detalles = await this.detalleRepo.find({
-      relations: ['producto', 'producto.categoria'],
-    });
+
+
+
+
+
+
+
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+    desde?: string,
+    hasta?: string,
+    clienteId?: number,
+    metodoPagoId?: number,
+  ) {
+
+    const skip = (page - 1) * limit;
+
+    const query = this.ventaRepo
+      .createQueryBuilder('venta')
+      .leftJoinAndSelect('venta.cliente', 'cliente')
+      .leftJoinAndSelect('venta.metodoPago', 'metodoPago')
+      .leftJoinAndSelect('venta.detalles', 'detalles')
+      .leftJoinAndSelect('detalles.producto', 'producto')
+      .orderBy('venta.fecha', 'DESC')
+      .skip(skip)
+      .take(limit);
+
+    if (desde) {
+      query.andWhere('venta.fecha >= :desde', {
+        desde: `${desde} 00:00:00`,
+      });
+    }
+
+    if (hasta) {
+      query.andWhere('venta.fecha <= :hasta', {
+        hasta: `${hasta} 23:59:59`,
+      });
+    }
+
+    if (clienteId) {
+      query.andWhere('cliente.id = :clienteId', {
+        clienteId,
+      });
+    }
+    if (metodoPagoId) {
+      query.andWhere('metodoPago.id = :metodoPagoId', {
+        metodoPagoId,
+      });
+    }
+
+
+    const [ventas, total] = await query.getManyAndCount();
+
+    return {
+      data: ventas,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+  async findOne(id: number) {
+    const venta = await this.ventaRepo
+      .createQueryBuilder('venta')
+      .leftJoinAndSelect('venta.cliente', 'cliente')
+      .leftJoinAndSelect('venta.metodoPago', 'metodoPago')
+      .leftJoinAndSelect('venta.detalles', 'detalles')
+      .leftJoinAndSelect('detalles.producto', 'producto')
+      .where('venta.id = :id', { id })
+      .getOne();
+
+    if (!venta) {
+      throw new BadRequestException(
+        'Venta no encontrada',
+      );
+    }
+
+    return venta;
+  }
+
+  async getDashboard(desde?: string,
+    hasta?: string,) {
+    const query = this.detalleRepo
+      .createQueryBuilder('detalle')
+      .leftJoinAndSelect('detalle.venta', 'venta')
+      .leftJoinAndSelect('detalle.producto', 'producto')
+      .leftJoinAndSelect('producto.categoria', 'categoria');
+
+    if (desde) {
+      query.andWhere('venta.fecha >= :desde', {
+        desde: `${desde} 00:00:00`,
+      });
+    }
+
+    if (hasta) {
+      query.andWhere('venta.fecha <= :hasta', {
+        hasta: `${hasta} 23:59:59`,
+      });
+    }
+
+    const detalles = await query.getMany();
+    console.log('DESDE:', desde);
+    console.log('HASTA:', hasta);
+    console.log('DETALLES ENCONTRADOS:', detalles.length);
     const productosActivos = await this.productoRepo.count({
       where: { activo: true },
     });
@@ -122,7 +305,22 @@ export class VentasService {
           .sort((a: any, b: any) => b[1] - a[1])[0][0]
         : "Sin ventas";
 
-    cantidadVentas = await this.ventaRepo.count();
+    const ventaQuery = this.ventaRepo
+      .createQueryBuilder('venta');
+
+    if (desde) {
+      ventaQuery.andWhere('venta.fecha >= :desde', {
+        desde: `${desde} 00:00:00`,
+      });
+    }
+
+    if (hasta) {
+      ventaQuery.andWhere('venta.fecha <= :hasta', {
+        hasta: `${hasta} 23:59:59`,
+      });
+    }
+
+    cantidadVentas = await ventaQuery.getCount();
 
     return {
       totalIngresos,

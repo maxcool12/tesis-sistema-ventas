@@ -7,7 +7,8 @@ import {
   Param,
   Put
 } from '@nestjs/common';
-
+import { CreateProductoDto } from './dto/CreateProductoDto';
+import { UpdateProductoDto } from './dto/UpdateProductoDto';
 import { ProductosService } from './productos.service';
 
 @Controller('productos')
@@ -24,9 +25,9 @@ getTodos() {
   }
 
   @Post()
-  create(@Body() data: any) {
-    return this.service.create(data);
-  }
+  create(@Body() data: CreateProductoDto) {
+  return this.service.create(data);
+}
 
   @Delete(':id')
   remove(@Param('id') id: number) {
@@ -34,14 +35,14 @@ getTodos() {
   }
   @Put(':id')
   update(
-    @Param('id') id: number,
-    @Body() data: any,
-  ) {
-    return this.service.actualizar(
-      Number(id),
-      data,
-    );
-  }
+  @Param('id') id: string,
+  @Body() data: UpdateProductoDto,
+) {
+  return this.service.actualizar(
+    Number(id),
+    data,
+  );
+}
   @Put(':id/reactivar')
 reactivar(@Param('id') id: number) {
   return this.service.reactivar(
