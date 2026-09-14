@@ -16,14 +16,32 @@ export class ProductosService {
   private categoriaRepo: Repository<Categoria>,
 ) {}
 
-  async findAll() {
-    return await this.repo.find({
-      where: {
-        activo: true
-      },
-      relations: ['categoria']
-    });
-  }
+  async findAll(
+  page: number = 1,
+  limit: number = 10,
+) {
+  const skip = (page - 1) * limit;
+
+  const [data, total] = await this.repo.findAndCount({
+    where: { activo: true },
+    relations: ['categoria'],
+    order: {
+      id: 'ASC',
+    },
+    skip,
+    take: limit,
+  });
+
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    data,
+    total,
+    page,
+    limit,
+    totalPages,
+  };
+}
 
   async create(data: CreateProductoDto) {
 

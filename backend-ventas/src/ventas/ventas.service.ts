@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, } from '@nestjs/common'
+import {
+  Injectable,
+  BadRequestException,
+} from '@nestjs/common';
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { Venta } from './venta.entity';
 import { DetalleVenta } from './detalle-venta.entity';
@@ -27,15 +31,10 @@ export class VentasService {
     private metodoPagoRepo: Repository<MetodoPago>,
 
     private dataSource: DataSource,
-  ) { }
-
-
-
-
+  ) {}
 
   async crearVenta(data: CrearVentaDto) {
     return await this.dataSource.transaction(async (manager) => {
-
 
       const cliente = await manager.getRepository(Cliente).findOne({
         where: {
@@ -50,13 +49,14 @@ export class VentasService {
         );
       }
 
-
-      const metodoPago = await manager.getRepository(MetodoPago).findOne({
-        where: {
-          id: data.metodoPagoId,
-          activo: true,
-        },
-      });
+      const metodoPago = await manager
+        .getRepository(MetodoPago)
+        .findOne({
+          where: {
+            id: data.metodoPagoId,
+            activo: true,
+          },
+        });
 
       if (!metodoPago) {
         throw new BadRequestException(
@@ -64,14 +64,13 @@ export class VentasService {
         );
       }
 
-
       const productosIds = data.productos.map(
         (item) => item.productoId,
       );
 
-
       const idsRepetidos = productosIds.filter(
-        (id, index) => productosIds.indexOf(id) !== index,
+        (id, index) =>
+          productosIds.indexOf(id) !== index,
       );
 
       if (idsRepetidos.length > 0) {
@@ -80,25 +79,24 @@ export class VentasService {
         );
       }
 
-
       const venta = manager.getRepository(Venta).create({
         total: 0,
         cliente,
         metodoPago,
       });
 
-
       const detalles: DetalleVenta[] = [];
-
 
       for (const item of data.productos) {
 
-        const producto = await manager.getRepository(Producto).findOne({
-          where: {
-            id: item.productoId,
-            activo: true,
-          },
-        });
+        const producto = await manager
+          .getRepository(Producto)
+          .findOne({
+            where: {
+              id: item.productoId,
+              activo: true,
+            },
+          });
 
         if (!producto) {
           throw new BadRequestException(
@@ -106,18 +104,17 @@ export class VentasService {
           );
         }
 
-
         if (producto.stock < item.cantidad) {
           throw new BadRequestException(
             `Stock insuficiente para ${producto.nombre}`,
           );
         }
 
-
         producto.stock -= item.cantidad;
 
-        await manager.getRepository(Producto).save(producto);
-
+        await manager
+          .getRepository(Producto)
+          .save(producto);
 
         const detalle = manager
           .getRepository(DetalleVenta)
@@ -125,9 +122,9 @@ export class VentasService {
             producto,
             cantidad: item.cantidad,
             precio_unitario: Number(producto.precio),
-            total: Number(producto.precio) * item.cantidad,
+            total:
+              Number(producto.precio) * item.cantidad,
           });
-
 
         venta.total +=
           Number(producto.precio) * item.cantidad;
@@ -135,11 +132,9 @@ export class VentasService {
         detalles.push(detalle);
       }
 
-
       const ventaGuardada = await manager
         .getRepository(Venta)
         .save(venta);
-
 
       for (const detalle of detalles) {
 
@@ -154,13 +149,6 @@ export class VentasService {
     });
   }
 
-
-
-
-
-
-
-
   async findAll(
     page: number = 1,
     limit: number = 10,
@@ -169,15 +157,26 @@ export class VentasService {
     clienteId?: number,
     metodoPagoId?: number,
   ) {
-
     const skip = (page - 1) * limit;
 
     const query = this.ventaRepo
       .createQueryBuilder('venta')
-      .leftJoinAndSelect('venta.cliente', 'cliente')
-      .leftJoinAndSelect('venta.metodoPago', 'metodoPago')
-      .leftJoinAndSelect('venta.detalles', 'detalles')
-      .leftJoinAndSelect('detalles.producto', 'producto')
+      .leftJoinAndSelect(
+        'venta.cliente',
+        'cliente',
+      )
+      .leftJoinAndSelect(
+        'venta.metodoPago',
+        'metodoPago',
+      )
+      .leftJoinAndSelect(
+        'venta.detalles',
+        'detalles',
+      )
+      .leftJoinAndSelect(
+        'detalles.producto',
+        'producto',
+      )
       .orderBy('venta.fecha', 'DESC')
       .skip(skip)
       .take(limit);
@@ -195,18 +194,21 @@ export class VentasService {
     }
 
     if (clienteId) {
-      query.andWhere('cliente.id = :clienteId', {
-        clienteId,
-      });
+      query.andWhere(
+        'cliente.id = :clienteId',
+        { clienteId },
+      );
     }
+
     if (metodoPagoId) {
-      query.andWhere('metodoPago.id = :metodoPagoId', {
-        metodoPagoId,
-      });
+      query.andWhere(
+        'metodoPago.id = :metodoPagoId',
+        { metodoPagoId },
+      );
     }
 
-
-    const [ventas, total] = await query.getManyAndCount();
+    const [ventas, total] =
+      await query.getManyAndCount();
 
     return {
       data: ventas,
@@ -216,13 +218,26 @@ export class VentasService {
       totalPages: Math.ceil(total / limit),
     };
   }
+
   async findOne(id: number) {
     const venta = await this.ventaRepo
       .createQueryBuilder('venta')
-      .leftJoinAndSelect('venta.cliente', 'cliente')
-      .leftJoinAndSelect('venta.metodoPago', 'metodoPago')
-      .leftJoinAndSelect('venta.detalles', 'detalles')
-      .leftJoinAndSelect('detalles.producto', 'producto')
+      .leftJoinAndSelect(
+        'venta.cliente',
+        'cliente',
+      )
+      .leftJoinAndSelect(
+        'venta.metodoPago',
+        'metodoPago',
+      )
+      .leftJoinAndSelect(
+        'venta.detalles',
+        'detalles',
+      )
+      .leftJoinAndSelect(
+        'detalles.producto',
+        'producto',
+      )
       .where('venta.id = :id', { id })
       .getOne();
 
@@ -235,13 +250,28 @@ export class VentasService {
     return venta;
   }
 
-  async getDashboard(desde?: string,
-    hasta?: string,) {
+  async getDashboard(
+    desde?: string,
+    hasta?: string,
+  ) {
     const query = this.detalleRepo
       .createQueryBuilder('detalle')
-      .leftJoinAndSelect('detalle.venta', 'venta')
-      .leftJoinAndSelect('detalle.producto', 'producto')
-      .leftJoinAndSelect('producto.categoria', 'categoria');
+      .leftJoinAndSelect(
+        'detalle.venta',
+        'venta',
+      )
+      .leftJoinAndSelect(
+        'venta.metodoPago',
+        'metodoPago',
+      )
+      .leftJoinAndSelect(
+        'detalle.producto',
+        'producto',
+      )
+      .leftJoinAndSelect(
+        'producto.categoria',
+        'categoria',
+      );
 
     if (desde) {
       query.andWhere('venta.fecha >= :desde', {
@@ -256,16 +286,23 @@ export class VentasService {
     }
 
     const detalles = await query.getMany();
+
     console.log('DESDE:', desde);
     console.log('HASTA:', hasta);
-    console.log('DETALLES ENCONTRADOS:', detalles.length);
-    const productosActivos = await this.productoRepo.count({
-      where: { activo: true },
-    });
+    console.log(
+      'DETALLES ENCONTRADOS:',
+      detalles.length,
+    );
 
-    const productosInactivos = await this.productoRepo.count({
-      where: { activo: false },
-    });
+    const productosActivos =
+      await this.productoRepo.count({
+        where: { activo: true },
+      });
+
+    const productosInactivos =
+      await this.productoRepo.count({
+        where: { activo: false },
+      });
 
     let totalIngresos = 0;
     let totalProductos = 0;
@@ -273,54 +310,91 @@ export class VentasService {
 
     const productosVendidos: any = {};
     const categorias: any = {};
+    const metodosPago: any = {};
 
     for (const d of detalles) {
+
       totalIngresos += Number(d.total);
+
       totalProductos += d.cantidad;
-      const nombreProducto = d.producto.nombre;
+
+      const nombreProducto =
+        d.producto.nombre;
 
       if (!productosVendidos[nombreProducto]) {
         productosVendidos[nombreProducto] = 0;
       }
 
-      productosVendidos[nombreProducto] += d.cantidad;
+      productosVendidos[nombreProducto] +=
+        d.cantidad;
 
-      const categoria = d.producto?.categoria?.nombre || "Sin categoría";
-
+      const categoria =
+        d.producto?.categoria?.nombre ||
+        'Sin categoría';
 
       if (!categorias[categoria]) {
         categorias[categoria] = 0;
       }
 
       categorias[categoria] += Number(d.total);
+
+      const metodoPago =
+        d.venta?.metodoPago?.nombre ||
+        'Sin método de pago';
+
+      if (!metodosPago[metodoPago]) {
+        metodosPago[metodoPago] = 0;
+      }
+
+      metodosPago[metodoPago] +=
+        Number(d.total);
     }
 
-    const ventasPorCategoria = Object.keys(categorias).map(c => ({
-      categoria: c,
-      total: categorias[c]
-    }));
+    const ventasPorCategoria =
+      Object.keys(categorias).map((c) => ({
+        categoria: c,
+        total: categorias[c],
+      }));
+
+    const ventasPorMetodoPago =
+      Object.keys(metodosPago).map((m) => ({
+        metodoPago: m,
+        total: metodosPago[m],
+      }));
+
     const productoMasVendido =
       Object.keys(productosVendidos).length > 0
         ? Object.entries(productosVendidos)
-          .sort((a: any, b: any) => b[1] - a[1])[0][0]
-        : "Sin ventas";
+            .sort(
+              (a: any, b: any) =>
+                b[1] - a[1],
+            )[0][0]
+        : 'Sin ventas';
 
-    const ventaQuery = this.ventaRepo
-      .createQueryBuilder('venta');
+    const ventaQuery =
+      this.ventaRepo
+        .createQueryBuilder('venta');
 
     if (desde) {
-      ventaQuery.andWhere('venta.fecha >= :desde', {
-        desde: `${desde} 00:00:00`,
-      });
+      ventaQuery.andWhere(
+        'venta.fecha >= :desde',
+        {
+          desde: `${desde} 00:00:00`,
+        },
+      );
     }
 
     if (hasta) {
-      ventaQuery.andWhere('venta.fecha <= :hasta', {
-        hasta: `${hasta} 23:59:59`,
-      });
+      ventaQuery.andWhere(
+        'venta.fecha <= :hasta',
+        {
+          hasta: `${hasta} 23:59:59`,
+        },
+      );
     }
 
-    cantidadVentas = await ventaQuery.getCount();
+    cantidadVentas =
+      await ventaQuery.getCount();
 
     return {
       totalIngresos,
@@ -329,7 +403,8 @@ export class VentasService {
       productoMasVendido,
       productosActivos,
       productosInactivos,
-      ventasPorCategoria
+      ventasPorCategoria,
+      ventasPorMetodoPago,
     };
   }
 }

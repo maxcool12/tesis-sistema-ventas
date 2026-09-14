@@ -5,7 +5,8 @@ import {
   Body,
   Delete,
   Param,
-  Put
+  Put,
+  Query
 } from '@nestjs/common';
 import { CreateProductoDto } from './dto/CreateProductoDto';
 import { UpdateProductoDto } from './dto/UpdateProductoDto';
@@ -20,9 +21,15 @@ getTodos() {
 }
 
   @Get()
-  getAll() {
-    return this.service.findAll();
-  }
+getAll(
+  @Query('page') page?: string,
+  @Query('limit') limit?: string,
+) {
+  return this.service.findAll(
+    page ? Number(page) : 1,
+    limit ? Number(limit) : 10,
+  );
+}
 
   @Post()
   create(@Body() data: CreateProductoDto) {
