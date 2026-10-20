@@ -58,6 +58,16 @@ export class MetodoPagoService {
 
   }
 
+  async findAllIncludingInactive() {
+
+    return this.metodoPagoRepository.find({
+      order: {
+        nombre: 'ASC',
+      },
+    });
+
+  }
+
   async findOne(id: number) {
 
     const metodoPago = await this.metodoPagoRepository.findOne({
@@ -109,6 +119,15 @@ export class MetodoPagoService {
     const metodoPago = await this.findOne(id);
 
     metodoPago.activo = false;
+
+    return this.metodoPagoRepository.save(metodoPago);
+  }
+
+  async reactivar(id: number) {
+
+    const metodoPago = await this.findOne(id);
+
+    metodoPago.activo = true;
 
     return this.metodoPagoRepository.save(metodoPago);
   }

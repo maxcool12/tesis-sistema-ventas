@@ -9,7 +9,6 @@ import {
 } from 'class-validator';
 
 export class CreateProductoDto {
-
   @IsString()
   @IsNotEmpty({
     message: 'El nombre es obligatorio.',
@@ -51,4 +50,12 @@ export class CreateProductoDto {
   @IsInt()
   @Min(1)
   categoriaId!: number;
+
+  @IsInt()
+  @Min(1)
+  proveedorId!: number;
+
+  @IsInt()
+  @Min(1)
+  empleadoCargaId!: number;
 }

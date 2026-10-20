@@ -6,7 +6,10 @@ import { VentasModule } from './ventas/ventas.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { ClientesModule } from './clientes/clientes.module';
 import { MetodoPagoModule } from './metodo-pago/metodo-pago.module';
-
+import { EmpleadosModule } from './empleados/empleados.module';
+import { ProveedoresModule } from './proveedores/proveedores.module';
+import { MovimientosStockModule } from './movimientos-stock/movimientos-stock.module';
+import { DevolucionesVentaModule } from './devoluciones-ventas/devoluciones-venta.module';
 
 @Module({
   imports: [
@@ -18,7 +21,7 @@ import { MetodoPagoModule } from './metodo-pago/metodo-pago.module';
       password: '',
       database: 'ventas_db',
       autoLoadEntities: true,
-      synchronize: true, 
+      synchronize: true,
     }),
     ProductosModule,
     CategoriasModule,
@@ -26,6 +29,10 @@ import { MetodoPagoModule } from './metodo-pago/metodo-pago.module';
     UsuariosModule,
     ClientesModule,
     MetodoPagoModule,
-    ],
+    EmpleadosModule,
+    ProveedoresModule,
+    MovimientosStockModule,
+    DevolucionesVentaModule,
+  ],
 })
 export class AppModule {}

@@ -27,6 +27,11 @@ export class MetodoPagoController {
     return this.metodoPagoService.findAll();
   }
 
+  @Get('todos')
+  findAllIncludingInactive() {
+    return this.metodoPagoService.findAllIncludingInactive();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.metodoPagoService.findOne(+id);
@@ -43,5 +48,10 @@ export class MetodoPagoController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.metodoPagoService.remove(+id);
+  }
+
+  @Patch(':id/reactivar')
+  reactivar(@Param('id') id: string) {
+    return this.metodoPagoService.reactivar(+id);
   }
 }

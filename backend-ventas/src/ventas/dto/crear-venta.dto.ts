@@ -27,6 +27,10 @@ export class CrearVentaDto {
   @Min(1)
   metodoPagoId!: number;
 
+  @IsInt()
+  @Min(1)
+  empleadoId!: number;
+
   @IsArray()
   @ArrayMinSize(1)
   @ValidateNested({ each: true })

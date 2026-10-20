@@ -3,377 +3,606 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistema de Ventas</title>
-
-  
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="bg-light">
+<body>
 
-  
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
+  <nav class="navbar navbar-dark bg-dark shadow">
+    <div class="container-fluid">
+      <span class="navbar-brand fw-bold">
+        <i class="bi bi-shop me-2"></i>Sistema de Ventas
+      </span>
 
-  <div class="container-fluid">
+      <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
 
-    <a class="navbar-brand fw-bold" href="#">
+        <button id="btnDashboard" class="btn btn-dark nav-btn activo" onclick="mostrarSeccion('dashboard')">
+          <i class="bi bi-speedometer2 me-1"></i>Dashboard
+        </button>
 
-      <i class="bi bi-shop me-2"></i>
+        <button id="btnProductos" class="btn btn-dark nav-btn" onclick="mostrarSeccion('productos')">
+          <i class="bi bi-box-seam me-1"></i>Productos
+        </button>
 
-      Sistema de Ventas
+        <button id="btnCategorias" class="btn btn-dark nav-btn" onclick="mostrarSeccion('categorias')">
+          <i class="bi bi-tags me-1"></i>Categorías
+        </button>
 
-    </a>
+        <button id="btnMetodosPago" class="btn btn-dark nav-btn" onclick="mostrarSeccion('metodosPago')">
+          <i class="bi bi-credit-card me-1"></i>Pagos
+        </button>
 
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#menuNavbar">
+        <button id="btnClientes" class="btn btn-dark nav-btn" onclick="mostrarSeccion('clientes')">
+          <i class="bi bi-people me-1"></i>Clientes
+        </button>
 
-      <span class="navbar-toggler-icon"></span>
+        <button id="btnEmpleados" class="btn btn-dark nav-btn" onclick="mostrarSeccion('empleados')">
+          <i class="bi bi-person-badge me-1"></i>Empleados
+        </button>
 
-    </button>
+        <button id="btnProveedores" class="btn btn-dark nav-btn" onclick="mostrarSeccion('proveedores')">
+          <i class="bi bi-truck me-1"></i>Proveedores
+        </button>
 
-    <div
-      class="collapse navbar-collapse"
-      id="menuNavbar">
+        <button id="btnMovimientosStock" class="btn btn-dark nav-btn" onclick="mostrarSeccion('movimientosStock')">
+          <i class="bi bi-arrow-left-right me-1"></i>Stock
+        </button>
 
-      <ul class="navbar-nav me-auto">
+        <button id="btnVentas" class="btn btn-dark nav-btn" onclick="mostrarSeccion('ventas')">
+          <i class="bi bi-cart-check me-1"></i>Ventas
+        </button>
 
-        <li class="nav-item">
+        <button id="btnHistorial" class="btn btn-dark nav-btn" onclick="mostrarSeccion('historial')">
+          <i class="bi bi-clock-history me-1"></i>Historial
+        </button>
 
-          <button
-            id="btnDashboard"
-            class="btn btn-primary nav-btn me-2"
-            onclick="mostrarSeccion('dashboard')">
+        <button id="btnDevoluciones" class="btn btn-dark nav-btn" onclick="mostrarSeccion('devoluciones')">
+          <i class="bi bi-arrow-counterclockwise me-1"></i>Devoluciones
+        </button>
 
-            <i class="bi bi-speedometer2 me-1"></i>
+        <span id="usuarioLogueado" class="text-white ms-2"></span>
 
-            Dashboard
-
-          </button>
-
-        </li>
-
-        <li class="nav-item">
-
-          <button
-            id="btnProductos"
-            class="btn btn-primary nav-btn me-2"
-            onclick="mostrarSeccion('productos')">
-
-            <i class="bi bi-box-seam me-1"></i>
-
-            Productos
-
-          </button>
-
-        </li>
-
-        <li class="nav-item">
-
-          <button
-            id="btnVentas"
-            class="btn btn-primary nav-btn me-2"
-            onclick="mostrarSeccion('ventas')">
-
-            <i class="bi bi-cart-check me-1"></i>
-
-            Ventas
-
-          </button>
-
-        </li>
-
-        <li class="nav-item">
-
-          <button
-            id="btnHistorial"
-            class="btn btn-primary nav-btn"
-            onclick="mostrarSeccion('historial')">
-
-            <i class="bi bi-clock-history me-1"></i>
-
-            Historial
-
-          </button>
-
-        </li>
-
-      </ul>
-
-      <div class="d-flex align-items-center">
-
-        <span
-          class="text-white me-3 fw-semibold">
-
-          <i class="bi bi-person-circle me-1"></i>
-
-          <span id="usuarioLogueado"></span>
-
-        </span>
-
-        <button
-          class="btn btn-danger"
-          onclick="logout()">
-
-          <i class="bi bi-box-arrow-right me-1"></i>
-
-          Salir
-
+        <button class="btn btn-outline-light ms-2" onclick="logout()">
+          <i class="bi bi-box-arrow-right me-1"></i>Salir
         </button>
 
       </div>
-
     </div>
+  </nav>
 
-  </div>
+  <main class="container-fluid py-4">
 
-</nav>
-  <div class="container mt-4">
-
-    
     <div id="dashboard">
 
-      <h3 class="mb-4">Dashboard</h3>
+      <h3 class="mb-4">
+        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+      </h3>
 
-      <div class="row">
+      <div class="card border-0 shadow-lg mb-4">
+        <div class="card-body">
 
-        
-        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="row align-items-end">
+
+            <div class="col-md-3 mb-3 mb-md-0">
+              <label for="dashboardDesde" class="form-label fw-bold">
+                Desde
+              </label>
+              <input type="date" id="dashboardDesde" class="form-control">
+            </div>
+
+            <div class="col-md-3 mb-3 mb-md-0">
+              <label for="dashboardHasta" class="form-label fw-bold">
+                Hasta
+              </label>
+              <input type="date" id="dashboardHasta" class="form-control">
+            </div>
+
+            <div class="col-md-3 mb-3 mb-md-0">
+              <label for="dashboardCliente" class="form-label fw-bold">
+                Cliente
+              </label>
+
+              <select id="dashboardCliente" class="form-select">
+                <option value="">Todos los clientes</option>
+              </select>
+            </div>
+
+            <div class="col-md-1 mb-3 mb-md-0">
+              <button class="btn btn-primary w-100" onclick="cargarDashboard()" title="Filtrar">
+                <i class="bi bi-funnel"></i>
+              </button>
+            </div>
+
+            <div class="col-md-2">
+              <button class="btn btn-outline-secondary w-100" onclick="limpiarFiltroDashboard()">
+                <i class="bi bi-arrow-clockwise me-1"></i>
+                Limpiar
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+
+        <div class="col-md-6 col-lg-4">
           <div class="card border-0 shadow-lg h-100">
-            <div class="card-body d-flex align-items-center p-4">
-
-              <div class="bg-success text-white rounded-circle p-3 me-3">
-                <i class="bi bi-cash-stack fs-2"></i>
-              </div>
-
+            <div class="card-body d-flex justify-content-between align-items-center">
               <div>
-                <h6 class="text-muted mb-1">Ingresos Totales</h6>
-                <h2 id="totalIngresos" class="fw-bold mb-0">$0</h2>
+                <h6 class="text-muted">Ingresos</h6>
+                <h3 id="totalIngresos" class="fw-bold mb-0">$0</h3>
               </div>
-
+              <div class="fs-1 text-success">
+                <i class="bi bi-currency-dollar"></i>
+              </div>
             </div>
           </div>
         </div>
 
-        
-        <div class="col-lg-4 col-md-6 mb-4">
+        <div class="col-md-6 col-lg-4">
           <div class="card border-0 shadow-lg h-100">
-            <div class="card-body d-flex align-items-center p-4">
-
-              <div class="bg-primary text-white rounded-circle p-3 me-3">
-                <i class="bi bi-box-seam fs-2"></i>
-              </div>
-
+            <div class="card-body d-flex justify-content-between align-items-center">
               <div>
-                <h6 class="text-muted mb-1">Productos Vendidos</h6>
-                <h2 id="totalProductos" class="fw-bold mb-0">0</h2>
+                <h6 class="text-muted">Productos vendidos</h6>
+                <h3 id="totalProductos" class="fw-bold mb-0">0</h3>
               </div>
-
+              <div class="fs-1 text-primary">
+                <i class="bi bi-box-seam"></i>
+              </div>
             </div>
           </div>
         </div>
 
-        
-        <div class="col-lg-4 col-md-6 mb-4">
+        <div class="col-md-6 col-lg-4">
           <div class="card border-0 shadow-lg h-100">
-            <div class="card-body d-flex align-items-center p-4">
-
-              <div class="bg-warning text-white rounded-circle p-3 me-3">
-                <i class="bi bi-cart-check fs-2"></i>
-              </div>
-
+            <div class="card-body d-flex justify-content-between align-items-center">
               <div>
-                <h6 class="text-muted mb-1">Cantidad de Ventas</h6>
-                <h2 id="cantidadVentas" class="fw-bold mb-0">0</h2>
+                <h6 class="text-muted">Cantidad de ventas</h6>
+                <h3 id="cantidadVentas" class="fw-bold mb-0">0</h3>
               </div>
-
+              <div class="fs-1 text-warning">
+                <i class="bi bi-cart-check"></i>
+              </div>
             </div>
           </div>
         </div>
 
-        
-        <div class="col-lg-4 col-md-6 mb-4">
+        <div class="col-md-6 col-lg-4">
           <div class="card border-0 shadow-lg h-100">
-            <div class="card-body d-flex align-items-center p-4">
-
-              <div class="bg-info text-white rounded-circle p-3 me-3">
-                <i class="bi bi-star-fill fs-2"></i>
-              </div>
-
+            <div class="card-body d-flex justify-content-between align-items-center">
               <div>
-                <h6 class="text-muted mb-1">Producto Más Vendido</h6>
-                <h2 id="productoMasVendido" class="fw-bold mb-0">-</h2>
+                <h6 class="text-muted">Producto más vendido</h6>
+                <h4 id="productoMasVendido" class="fw-bold mb-0">-</h4>
               </div>
-
+              <div class="fs-1 text-danger">
+                <i class="bi bi-trophy"></i>
+              </div>
             </div>
           </div>
         </div>
 
-        
-        <div class="col-lg-4 col-md-6 mb-4">
+        <div class="col-md-6 col-lg-4">
           <div class="card border-0 shadow-lg h-100">
-            <div class="card-body d-flex align-items-center p-4">
-
-              <div class="bg-success text-white rounded-circle p-3 me-3">
-                <i class="bi bi-check-circle-fill fs-2"></i>
-              </div>
-
+            <div class="card-body d-flex justify-content-between align-items-center">
               <div>
-                <h6 class="text-muted mb-1">Productos Activos</h6>
-                <h2 id="productosActivos" class="fw-bold mb-0">0</h2>
+                <h6 class="text-muted">Productos activos</h6>
+                <h3 id="productosActivos" class="fw-bold mb-0">0</h3>
               </div>
-
+              <div class="fs-1 text-success">
+                <i class="bi bi-check-circle"></i>
+              </div>
             </div>
           </div>
         </div>
 
-        
-        <div class="col-lg-4 col-md-6 mb-4">
+        <div class="col-md-6 col-lg-4">
           <div class="card border-0 shadow-lg h-100">
-            <div class="card-body d-flex align-items-center p-4">
-
-              <div class="bg-danger text-white rounded-circle p-3 me-3">
-                <i class="bi bi-x-circle-fill fs-2"></i>
-              </div>
-
+            <div class="card-body d-flex justify-content-between align-items-center">
               <div>
-                <h6 class="text-muted mb-1">Productos Inactivos</h6>
-                <h2 id="cantidadProductosInactivos" class="fw-bold mb-0">0</h2>
+                <h6 class="text-muted">Productos inactivos</h6>
+                <h3 id="cantidadProductosInactivos" class="fw-bold mb-0">0</h3>
               </div>
-
+              <div class="fs-1 text-secondary">
+                <i class="bi bi-x-circle"></i>
+              </div>
             </div>
           </div>
         </div>
 
       </div>
 
-      
-      <div class="card border-0 shadow-lg mt-3">
+      <div class="card border-0 shadow-lg">
 
         <div class="card-header bg-white">
           <h5 class="mb-0">
-            <i class="bi bi-bar-chart-fill me-2"></i>
-            Ventas por Categoría
+            <i class="bi bi-bar-chart-fill me-2"></i>Ventas por Categoría
           </h5>
         </div>
 
         <div class="card-body">
-          <canvas id="graficoCategorias"></canvas>
+
+          <div class="row align-items-center">
+
+            <div class="col-md-8">
+              <canvas id="graficoCategorias"></canvas>
+            </div>
+
+            <div class="col-md-4">
+              <div id="resumenCategorias"></div>
+            </div>
+
+          </div>
+
         </div>
 
       </div>
 
-      
       <div class="card border-0 shadow-lg mt-4">
 
         <div class="card-header bg-white">
           <h5 class="mb-0">
-            <i class="bi bi-clipboard-data me-2"></i>
-            Resumen por Categoría
+            <i class="bi bi-credit-card me-2"></i>Ventas por Método de Pago
           </h5>
         </div>
 
         <div class="card-body">
-          <div id="resumenCategorias"></div>
+
+          <div class="row align-items-center">
+
+            <div class="col-md-7">
+              <canvas id="graficoMetodosPago"></canvas>
+            </div>
+
+            <div class="col-md-5">
+              <div id="resumenMetodosPago"></div>
+            </div>
+
+          </div>
+
         </div>
 
       </div>
 
     </div>
 
-    
     <div id="productos" style="display:none;">
 
       <div class="d-flex justify-content-between align-items-center mb-4">
 
-        <h3 class="mb-0">
-          <i class="bi bi-box-seam me-2"></i>
-          Gestión de Productos
+        <h3>
+          <i class="bi bi-box-seam me-2"></i>Gestión de Productos
         </h3>
 
-        <button class="btn btn-outline-secondary" onclick="mostrarInactivos()">
+        <div class="d-flex gap-2">
 
-          <i class="bi bi-archive me-2"></i>
-          Productos Inactivos
+          <button id="btnInactivos" class="btn btn-outline-secondary" onclick="mostrarInactivos()">
+            <i class="bi bi-archive me-1"></i>Inactivos
+          </button>
 
+          <button id="btnGuardarProducto" class="btn btn-primary" onclick="abrirModalProducto()">
+            <i class="bi bi-plus-lg me-1"></i>Nuevo producto
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="card border-0 shadow-lg mb-4">
+
+        <div class="card-body">
+
+          <div class="row g-3">
+
+            <div class="col-md-8">
+
+              <label for="buscarProducto" class="form-label fw-bold">
+                Buscar producto
+              </label>
+
+              <input type="text" id="buscarProducto" class="form-control"
+                placeholder="Buscar por nombre o descripción...">
+
+            </div>
+
+            <div class="col-md-4">
+
+              <label for="filtroCategoria" class="form-label fw-bold">
+                Categoría
+              </label>
+
+              <select id="filtroCategoria" class="form-select">
+                <option value="">Todas las categorías</option>
+              </select>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div id="listaProductos" class="row g-4"></div>
+
+      <div id="paginacionProductos"></div>
+
+    </div>
+
+    <div id="categorias" style="display:none;">
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h3 class="mb-0">
+          <i class="bi bi-tags me-2"></i>Gestión de Categorías
+        </h3>
+
+        <div class="d-flex gap-2">
+
+          <button class="btn btn-secondary" onclick="mostrarCategoriasInactivas()">
+            <i class="bi bi-eye me-1"></i>
+            Ver inactivas
+          </button>
+
+          <button id="btnNuevaCategoria" class="btn btn-primary" onclick="abrirModalCategoria()">
+            <i class="bi bi-plus-lg me-1"></i>Nueva categoría
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="card border-0 shadow-lg mb-4">
+
+        <div class="card-body">
+
+          <label for="buscarCategoria" class="form-label fw-bold">
+            Buscar categoría
+          </label>
+
+          <input type="text" id="buscarCategoria" class="form-control" placeholder="Buscar por nombre...">
+
+        </div>
+
+      </div>
+
+      <div id="listaCategorias" class="row g-4"></div>
+
+    </div>
+
+    <div id="metodosPago" style="display:none;">
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h3 class="mb-0">
+          <i class="bi bi-credit-card me-2"></i>Gestión de Métodos de Pago
+        </h3>
+
+        <div class="d-flex gap-2">
+
+          <button class="btn btn-secondary" onclick="mostrarMetodosPagoInactivos()">
+            <i class="bi bi-eye me-1"></i>
+            Ver inactivos
+          </button>
+
+          <button id="btnNuevoMetodoPago" class="btn btn-primary" data-bs-toggle="modal"
+            data-bs-target="#modalMetodoPago">
+            <i class="bi bi-plus-lg me-1"></i>Nuevo método
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="card border-0 shadow-lg mb-4">
+
+        <div class="card-body">
+
+          <label for="buscarMetodoPago" class="form-label fw-bold">
+            Buscar método de pago
+          </label>
+
+          <input type="text" id="buscarMetodoPago" class="form-control" placeholder="Buscar por nombre...">
+
+        </div>
+
+      </div>
+
+      <div id="listaMetodosPago" class="row g-4"></div>
+
+    </div>
+
+    <div id="clientes" style="display:none;">
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h3 class="mb-0">
+          <i class="bi bi-people me-2"></i>Gestión de Clientes
+        </h3>
+
+        <div class="d-flex gap-2">
+
+          <button class="btn btn-secondary" onclick="mostrarClientesInactivos()">
+            <i class="bi bi-eye me-1"></i>
+            Ver inactivos
+          </button>
+
+          <button id="btnNuevoCliente" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCliente">
+            <i class="bi bi-person-plus me-1"></i>Nuevo cliente
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="card border-0 shadow-lg mb-4">
+
+        <div class="card-body">
+
+          <label for="buscarCliente" class="form-label fw-bold">
+            Buscar cliente
+          </label>
+
+          <input type="text" id="buscarCliente" class="form-control"
+            placeholder="Buscar por nombre, apellido o email...">
+
+        </div>
+
+      </div>
+
+      <div id="listaClientes" class="row g-4"></div>
+
+    </div>
+
+    <div id="empleados" style="display:none;">
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h3 class="mb-0">
+          <i class="bi bi-person-badge me-2"></i>Gestión de Empleados
+        </h3>
+
+        <div class="d-flex gap-2">
+
+          <button class="btn btn-secondary" onclick="mostrarEmpleadosInactivos()">
+            <i class="bi bi-eye me-1"></i>Ver inactivos
+          </button>
+
+          <button id="btnNuevoEmpleado" class="btn btn-primary" onclick="abrirModalEmpleado()">
+            <i class="bi bi-person-plus me-1"></i>Nuevo empleado
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="card border-0 shadow-lg mb-4">
+
+        <div class="card-body">
+
+          <label for="buscarEmpleado" class="form-label fw-bold">
+            Buscar empleado
+          </label>
+
+          <input type="text" id="buscarEmpleado" class="form-control"
+            placeholder="Buscar por nombre, apellido, DNI o email...">
+
+        </div>
+
+      </div>
+
+      <div id="listaEmpleados" class="row g-4"></div>
+
+      <div id="paginacionEmpleados"></div>
+
+    </div>
+
+    <div id="proveedores" style="display:none;">
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h3 class="mb-0">
+          <i class="bi bi-truck me-2"></i>Gestión de Proveedores
+        </h3>
+
+        <div class="d-flex gap-2">
+
+          <button class="btn btn-secondary" onclick="mostrarProveedoresInactivos()">
+            <i class="bi bi-eye me-1"></i>Ver inactivos
+          </button>
+
+          <button id="btnNuevoProveedor" class="btn btn-primary" onclick="abrirModalProveedor()">
+            <i class="bi bi-plus-lg me-1"></i>Nuevo proveedor
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="card border-0 shadow-lg mb-4">
+
+        <div class="card-body">
+
+          <label for="buscarProveedor" class="form-label fw-bold">
+            Buscar proveedor
+          </label>
+
+          <input type="text" id="buscarProveedor" class="form-control" placeholder="Buscar por nombre, CUIT o email...">
+
+        </div>
+
+      </div>
+
+      <div id="listaProveedores" class="row g-4"></div>
+
+      <div id="paginacionProveedores"></div>
+
+    </div>
+
+    <div id="movimientosStock" style="display:none;">
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h3 class="mb-0">
+          <i class="bi bi-arrow-left-right me-2"></i>Movimientos de Stock
+        </h3>
+
+        <button id="btnNuevoMovimientoStock" class="btn btn-primary" onclick="abrirModalMovimientoStock()">
+          <i class="bi bi-plus-lg me-1"></i>Nuevo movimiento
         </button>
 
       </div>
 
-      
-      <div class="card shadow-lg border-0 mb-4">
-
-        <div class="card-header bg-primary text-white">
-
-          <h5 class="mb-0">
-            <i class="bi bi-plus-circle me-2"></i>
-            Registrar Producto
-          </h5>
-
-        </div>
+      <div class="card border-0 shadow-lg mb-4">
 
         <div class="card-body">
 
-          <div class="row">
+          <div class="row align-items-end">
 
             <div class="col-md-4 mb-3">
-
-              <label class="form-label fw-bold">
-                Nombre
+              <label for="buscarMovimientoStock" class="form-label fw-bold">
+                Buscar
               </label>
-
-              <input id="nombreProducto" class="form-control" placeholder="Nombre del producto">
-
+              <input type="text" id="buscarMovimientoStock" class="form-control"
+                placeholder="Producto, empleado o motivo...">
             </div>
 
             <div class="col-md-2 mb-3">
-
-              <label class="form-label fw-bold">
-                Precio
+              <label for="tipoMovimientoStock" class="form-label fw-bold">
+                Tipo
               </label>
-
-              <input id="precioProducto" type="number" class="form-control">
-
+              <select id="tipoMovimientoStock" class="form-select">
+                <option value="">Todos</option>
+                <option value="entrada">Entrada</option>
+                <option value="salida">Salida</option>
+                <option value="ajuste">Ajuste</option>
+              </select>
             </div>
 
             <div class="col-md-2 mb-3">
-
-              <label class="form-label fw-bold">
-                Stock
+              <label for="movimientoDesde" class="form-label fw-bold">
+                Desde
               </label>
-
-              <input id="stockProducto" type="number" class="form-control">
-
+              <input type="date" id="movimientoDesde" class="form-control">
             </div>
 
-            <div class="col-md-4 mb-3">
-
-              <label class="form-label fw-bold">
-                Categoría
+            <div class="col-md-2 mb-3">
+              <label for="movimientoHasta" class="form-label fw-bold">
+                Hasta
               </label>
-
-              <select id="categoriaProducto" class="form-select">
-              </select>
-
+              <input type="date" id="movimientoHasta" class="form-control">
             </div>
 
-          </div>
-
-          <div class="text-end">
-
-            <button id="btnGuardarProducto" class="btn btn-success px-4" onclick="guardarProducto()">
-
-              <i class="bi bi-save me-2"></i>
-              Guardar Producto
-
-            </button>
+            <div class="col-md-2 mb-3">
+              <button class="btn btn-primary w-100" onclick="cargarMovimientosStock()">
+                <i class="bi bi-funnel me-1"></i>Filtrar
+              </button>
+            </div>
 
           </div>
 
@@ -381,261 +610,124 @@
 
       </div>
 
-      
-      <div class="card shadow-lg border-0">
-
-        <div class="card-header bg-white">
-
-          <div class="row align-items-center">
-
-            <div class="col-md-4">
-
-              <h5 class="mb-0">
-                <i class="bi bi-boxes me-2"></i>
-                Productos Registrados
-              </h5>
-
-            </div>
-
-            <div class="col-md-4">
-
-              <input type="text" id="buscarProducto" class="form-control" placeholder="🔍 Buscar producto..."
-                onkeyup="cargarProductos()">
-
-            </div>
-
-            <div class="col-md-4">
-
-              <select id="filtroCategoria" class="form-select" onchange="cargarProductos()">
-
-                <option value="">
-                  Todas las categorías
-                </option>
-
-              </select>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <div class="card-body">
-
-          <div id="listaProductos" class="row">
-          </div>
-
-        </div>
-
-      </div>
+      <div id="listaMovimientosStock"></div>
+      <div id="paginacionMovimientosStock"></div>
 
     </div>
 
-    
-    <div class="modal fade" id="modalEditarProducto" tabindex="-1">
-
-      <div class="modal-dialog">
-
-        <div class="modal-content">
-
-          <div class="modal-header">
-
-            <h5 class="modal-title">
-
-              <i class="bi bi-pencil-square me-2"></i>
-
-              Editar Producto
-
-            </h5>
-
-            <button type="button" class="btn-close" data-bs-dismiss="modal">
-            </button>
-
-          </div>
-
-          <div class="modal-body">
-
-            <input type="hidden" id="editarId">
-
-            <div class="mb-3">
-
-              <label class="form-label fw-bold">
-                Nombre
-              </label>
-
-              <input type="text" id="editarNombre" class="form-control">
-
-            </div>
-
-            <div class="mb-3">
-
-              <label class="form-label fw-bold">
-                Precio
-              </label>
-
-              <input type="number" id="editarPrecio" class="form-control">
-
-            </div>
-
-            <div class="mb-3">
-
-              <label class="form-label fw-bold">
-                Stock
-              </label>
-
-              <input type="number" id="editarStock" class="form-control">
-
-            </div>
-
-            <div class="mb-3">
-
-              <label class="form-label fw-bold">
-                Categoría
-              </label>
-
-              <select id="editarCategoria" class="form-select">
-              </select>
-
-            </div>
-
-          </div>
-
-          <div class="modal-footer">
-
-            <button class="btn btn-primary" onclick="guardarEdicionProducto()">
-
-              <i class="bi bi-check-circle me-2"></i>
-
-              Guardar Cambios
-
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-    
     <div id="ventas" style="display:none;">
 
-      <h2 class="mb-4">
-        <i class="bi bi-cart-check me-2"></i>
-        Registrar Venta
-      </h2>
+      <h3 class="mb-4">
+        <i class="bi bi-cart-check me-2"></i>Registrar Venta
+      </h3>
 
-      <div class="card shadow-lg border-0">
+      <div class="row g-4">
 
-        <div class="card-header bg-success text-white">
+        <div class="col-lg-5">
 
-          <h5 class="mb-0">
-            <i class="bi bi-bag-plus me-2"></i>
-            Nueva Venta
-          </h5>
+          <div class="card border-0 shadow-lg">
 
-        </div>
-
-        <div class="card-body">
-
-          <div class="row">
-
-            <div class="col-md-6 mb-3">
-
-              <label class="form-label fw-bold">
-                Producto
-              </label>
-
-              <select id="productoVenta" class="form-select">
-              </select>
-
+            <div class="card-header bg-white">
+              <h5 class="mb-0">Agregar productos</h5>
             </div>
 
-            <div class="col-md-3 mb-3">
+            <div class="card-body">
 
-              <label class="form-label fw-bold">
-                Cantidad
-              </label>
+              <div class="mb-3">
 
-              <input id="cantidadVenta" type="number" min="1" value="1" class="form-control">
+                <label for="buscarClienteVenta" class="form-label fw-bold">
+                  Buscar cliente
+                </label>
 
-            </div>
+                <input type="text" id="buscarClienteVenta" class="form-control mb-2" placeholder="Buscar cliente...">
 
-            <div class="col-md-3 mb-3 d-flex align-items-end">
+                <select id="clienteVenta" class="form-select">
+                  <option value="">Seleccionar cliente</option>
+                </select>
+
+              </div>
+
+              <div class="mb-3">
+
+                <label for="metodoPagoVenta" class="form-label fw-bold">
+                  Método de pago
+                </label>
+
+                <select id="metodoPagoVenta" class="form-select">
+                  <option value="">Seleccionar método de pago</option>
+                </select>
+
+              </div>
+              <div class="mb-3">
+                <label for="empleadoVenta" class="form-label fw-bold">Empleado que realiza la venta</label>
+                <select id="empleadoVenta" class="form-select">
+                  <option value="">Seleccionar empleado</option>
+                </select>
+              </div>
+              <div class="mb-3">
+
+                <label for="buscarProductoVenta" class="form-label fw-bold">
+                  Buscar producto
+                </label>
+
+                <input type="text" id="buscarProductoVenta" class="form-control mb-2"
+                  placeholder="Buscar por nombre o descripción...">
+
+                <select id="productoVenta" class="form-select">
+                  <option value="">Seleccionar producto</option>
+                </select>
+
+              </div>
+
+              <div class="mb-3">
+
+                <label for="cantidadVenta" class="form-label fw-bold">
+                  Cantidad
+                </label>
+
+                <input type="number" id="cantidadVenta" class="form-control" min="1" value="1">
+
+              </div>
 
               <button class="btn btn-primary w-100" onclick="agregarAlCarrito()">
-
-                <i class="bi bi-plus-circle me-2"></i>
-
-                Agregar
-
+                <i class="bi bi-cart-plus me-1"></i>Agregar al carrito
               </button>
 
             </div>
 
           </div>
 
-          <hr>
+        </div>
 
-          <h5 class="mb-3">
+        <div class="col-lg-7">
 
-            <i class="bi bi-cart3 me-2"></i>
+          <div class="card border-0 shadow-lg">
 
-            Carrito de Compra
+            <div class="card-header bg-white">
+              <h5 class="mb-0">
+                <i class="bi bi-cart3 me-2"></i>Carrito
+              </h5>
+            </div>
 
-          </h5>
+            <div class="card-body">
 
-          <div class="table-responsive">
+              <div id="carrito"></div>
 
-            <table class="table table-hover align-middle">
+              <hr>
 
-              <thead class="table-light">
+              <div class="d-flex justify-content-between align-items-center">
 
-                <tr>
+                <h5 class="mb-0">Total</h5>
 
-                  <th>Producto</th>
-                  <th>Cantidad</th>
-                  <th>Precio Unit.</th>
-                  <th>Subtotal</th>
-                  <th></th>
+                <h4 id="totalCarrito" class="mb-0 text-success">$0</h4>
 
-                </tr>
+              </div>
 
-              </thead>
+              <button class="btn btn-success w-100 mt-3" onclick="realizarVenta()">
+                <i class="bi bi-check-circle me-1"></i>Realizar venta
+              </button>
 
-              <tbody id="carrito">
-
-              </tbody>
-
-            </table>
-
-          </div>
-
-          <div class="text-end mt-4">
-
-            <h3 class="fw-bold">
-
-              Total:
-              <span class="text-success" id="totalCarrito">
-
-                $0
-
-              </span>
-
-            </h3>
-
-          </div>
-
-          <div class="text-end">
-
-            <button class="btn btn-success btn-lg" onclick="realizarVenta()">
-
-              <i class="bi bi-check-circle me-2"></i>
-
-              Finalizar Venta
-
-            </button>
+            </div>
 
           </div>
 
@@ -645,51 +737,252 @@
 
     </div>
 
-   
     <div id="historial" style="display:none;">
 
       <h3 class="mb-4">
-        <i class="bi bi-clock-history me-2"></i>
-        Historial de Ventas
+        <i class="bi bi-clock-history me-2"></i>Historial de Ventas
       </h3>
 
-      <div class="card shadow-lg border-0">
+      <div class="card border-0 shadow-lg mb-4">
 
-        <div class="card-header bg-white">
+        <div class="card-body">
 
-          <h5 class="mb-0">
-            <i class="bi bi-receipt me-2"></i>
-            Ventas Registradas
-          </h5>
+          <div class="row g-3 align-items-end">
+
+            <div class="col-md-3">
+
+              <label for="historialDesde" class="form-label fw-bold">
+                Desde
+              </label>
+
+              <input type="date" id="historialDesde" class="form-control">
+
+            </div>
+
+            <div class="col-md-3">
+
+              <label for="historialHasta" class="form-label fw-bold">
+                Hasta
+              </label>
+
+              <input type="date" id="historialHasta" class="form-control">
+
+            </div>
+
+            <div class="col-md-3">
+
+              <label for="historialCliente" class="form-label fw-bold">
+                Cliente
+              </label>
+
+              <select id="historialCliente" class="form-select">
+                <option value="">Todos los clientes</option>
+              </select>
+
+            </div>
+
+            <div class="col-md-3">
+
+              <label for="historialMetodoPago" class="form-label fw-bold">
+                Método de pago
+              </label>
+
+              <select id="historialMetodoPago" class="form-select">
+                <option value="">Todos los métodos</option>
+              </select>
+
+            </div>
+
+            <div class="col-12 d-flex justify-content-end">
+
+              <button class="btn btn-outline-secondary" onclick="limpiarFiltrosHistorial()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Limpiar filtros
+              </button>
+
+            </div>
+
+          </div>
 
         </div>
+
+      </div>
+
+      <div class="card border-0 shadow-lg">
 
         <div class="card-body">
 
           <div class="table-responsive">
 
-            <table class="table table-striped table-hover align-middle">
+            <table class="table table-hover align-middle">
 
-              <thead class="table-dark">
+              <thead>
 
                 <tr>
-
                   <th>Fecha</th>
-                  <th>Producto</th>
-                  <th>Cantidad</th>
+                  <th>Cliente</th>
+                  <th>Método</th>
+                  <th>Productos</th>
                   <th>Total</th>
-
+                  <th>Detalle</th>
+                  <th></th>
                 </tr>
 
               </thead>
 
-              <tbody id="tablaHistorial">
-
-              </tbody>
+              <tbody id="tablaHistorial"></tbody>
 
             </table>
 
           </div>
+
+          <div id="paginacionHistorial"></div>
+
+        </div>
+
+
+
+
+      </div>
+
+    </div>
+
+    <div id="devoluciones" style="display:none;">
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">
+          <i class="bi bi-arrow-counterclockwise me-2"></i>
+          Gestión de Devoluciones
+        </h3>
+
+        <button class="btn btn-primary" onclick="abrirModalDevolucion()">
+          <i class="bi bi-plus-lg me-1"></i>
+          Nueva devolución
+        </button>
+      </div>
+
+      <div class="card border-0 shadow-lg">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Venta</th>
+                  <th>Importe</th>
+                  <th>Tipo de crédito</th>
+                  <th>Estado</th>
+                  <th>Motivo</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+
+              <tbody id="tablaDevoluciones">
+                <tr>
+                  <td colspan="7" class="text-center text-muted">
+                    Cargando devoluciones...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <div class="modal fade" id="modalProducto" tabindex="-1">
+
+    <div class="modal-dialog">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">
+            <i class="bi bi-box-seam me-2"></i>Nuevo producto
+          </h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label for="nombreProducto" class="form-label">Nombre</label>
+            <input type="text" id="nombreProducto" class="form-control">
+          </div>
+
+          <div class="mb-3">
+
+            <label for="descripcionProducto" class="form-label">
+              Descripción
+            </label>
+
+            <textarea id="descripcionProducto" class="form-control" rows="3"
+              placeholder="Ej: Coca Cola Zero 1.5 litros"></textarea>
+
+          </div>
+
+          <div class="mb-3">
+
+            <label for="precioProducto" class="form-label">
+              Precio
+            </label>
+
+            <input type="number" id="precioProducto" class="form-control" min="0">
+
+          </div>
+
+          <div class="mb-3">
+
+            <label for="stockProducto" class="form-label">
+              Stock
+            </label>
+
+            <input type="number" id="stockProducto" class="form-control" min="0">
+
+          </div>
+
+          <div class="mb-3">
+
+            <label for="categoriaProducto" class="form-label">
+              Categoría
+            </label>
+
+            <select id="categoriaProducto" class="form-select">
+              <option value="">Seleccionar categoría</option>
+            </select>
+
+          </div>
+
+          <div class="mb-3">
+            <label for="proveedorProducto" class="form-label">Proveedor</label>
+            <select id="proveedorProducto" class="form-select">
+              <option value="">Seleccionar proveedor</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="empleadoCargaProducto" class="form-label">Empleado que carga el producto</label>
+            <select id="empleadoCargaProducto" class="form-select">
+              <option value="">Seleccionar empleado</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button type="button" class="btn btn-primary" onclick="guardarProducto()">
+            Guardar
+          </button>
 
         </div>
 
@@ -699,7 +992,109 @@
 
   </div>
 
-  
+  <div class="modal fade" id="modalEditarProducto" tabindex="-1">
+
+    <div class="modal-dialog">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">
+            <i class="bi bi-pencil-square me-2"></i>Editar producto
+          </h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <input type="hidden" id="editarId">
+
+          <div class="mb-3">
+            <label for="editarNombre" class="form-label">
+              Nombre
+            </label>
+            <input type="text" id="editarNombre" class="form-control">
+          </div>
+
+          <div class="mb-3">
+
+            <label for="editarDescripcion" class="form-label">
+              Descripción
+            </label>
+
+            <textarea id="editarDescripcion" class="form-control" rows="3"></textarea>
+
+          </div>
+
+          <div class="mb-3">
+
+            <label for="editarPrecio" class="form-label">
+              Precio
+            </label>
+
+            <input type="number" id="editarPrecio" class="form-control" min="0">
+
+          </div>
+
+          <div class="mb-3">
+
+            <label for="editarStock" class="form-label">
+              Stock
+            </label>
+
+            <input type="number" id="editarStock" class="form-control" min="0">
+
+          </div>
+
+          <div class="mb-3">
+
+            <label for="editarCategoria" class="form-label">
+              Categoría
+            </label>
+
+            <select id="editarCategoria" class="form-select">
+              <option value="">Seleccionar categoría</option>
+            </select>
+
+          </div>
+
+          <div class="mb-3">
+            <label for="editarProveedorProducto" class="form-label">Proveedor</label>
+            <select id="editarProveedorProducto" class="form-select">
+              <option value="">Seleccionar proveedor</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="editarEmpleadoProducto" class="form-label">Empleado</label>
+            <select id="editarEmpleadoProducto" class="form-select">
+              <option value="">Seleccionar empleado</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button type="button" class="btn btn-primary" onclick="guardarEdicionProducto()">
+            Guardar cambios
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
   <div class="modal fade" id="modalInactivos" tabindex="-1">
 
     <div class="modal-dialog modal-lg">
@@ -709,22 +1104,16 @@
         <div class="modal-header">
 
           <h5 class="modal-title">
-
-            <i class="bi bi-archive me-2"></i>
-
-            Productos Inactivos
-
+            <i class="bi bi-archive me-2"></i>Productos inactivos
           </h5>
 
-          <button class="btn-close" data-bs-dismiss="modal">
-          </button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 
         </div>
 
         <div class="modal-body">
 
-          <div id="productosInactivos" class="row">
-          </div>
+          <div id="productosInactivos" class="row g-3"></div>
 
         </div>
 
@@ -733,32 +1122,1078 @@
     </div>
 
   </div>
+
+  <div class="modal fade" id="modalCategoria" tabindex="-1">
+
+    <div class="modal-dialog">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">Nueva categoría</h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <label for="nombreCategoria" class="form-label">
+            Nombre
+          </label>
+
+          <input type="text" id="nombreCategoria" class="form-control">
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button class="btn btn-primary" onclick="guardarCategoria()">
+            Guardar
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalEditarCategoria" tabindex="-1">
+
+    <div class="modal-dialog">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">Editar categoría</h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <input type="hidden" id="editarCategoriaId">
+
+          <label for="editarNombreCategoria" class="form-label">
+            Nombre
+          </label>
+
+          <input type="text" id="editarNombreCategoria" class="form-control">
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button class="btn btn-primary" onclick="guardarEdicionCategoria()">
+            Guardar cambios
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalCategoriasInactivas" tabindex="-1">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">
+            <i class="bi bi-tags me-2"></i>Categorías inactivas
+          </h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <div id="categoriasInactivas" class="row g-3"></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalMetodoPago" tabindex="-1">
+
+    <div class="modal-dialog">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">Nuevo método de pago</h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <label for="nombreMetodoPago" class="form-label">
+            Nombre
+          </label>
+
+          <input type="text" id="nombreMetodoPago" class="form-control">
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button class="btn btn-primary" onclick="guardarMetodoPago()">
+            Guardar
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalEditarMetodoPago" tabindex="-1">
+
+    <div class="modal-dialog">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">Editar método de pago</h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <input type="hidden" id="editarMetodoPagoId">
+
+          <label for="editarNombreMetodoPago" class="form-label">
+            Nombre
+          </label>
+
+          <input type="text" id="editarNombreMetodoPago" class="form-control">
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button class="btn btn-primary" onclick="guardarEdicionMetodoPago()">
+            Guardar cambios
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalMetodosPagoInactivos" tabindex="-1">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">
+            <i class="bi bi-credit-card me-2"></i>Métodos de pago inactivos
+          </h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <div id="metodosPagoInactivos" class="row g-3"></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalCliente" tabindex="-1">
+
+    <div class="modal-dialog">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">Nuevo cliente</h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <div class="mb-3">
+
+            <label for="nombreCliente" class="form-label">
+              Nombre
+            </label>
+
+            <input type="text" id="nombreCliente" class="form-control">
+
+          </div>
+
+          <div class="mb-3">
+
+            <label for="apellidoCliente" class="form-label">
+              Apellido
+            </label>
+
+            <input type="text" id="apellidoCliente" class="form-control">
+
+          </div>
+
+          <div class="mb-3">
+
+            <label for="emailCliente" class="form-label">
+              Email
+            </label>
+
+            <input type="email" id="emailCliente" class="form-control">
+
+          </div>
+
+          <div class="mb-3">
+
+            <label for="telefonoCliente" class="form-label">
+              Teléfono
+            </label>
+
+            <input type="text" id="telefonoCliente" class="form-control">
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button class="btn btn-primary" onclick="guardarCliente()">
+            Guardar
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalEditarCliente" tabindex="-1">
+
+    <div class="modal-dialog">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">Editar cliente</h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <input type="hidden" id="editarClienteId">
+
+          <div class="mb-3">
+
+            <label for="editarNombreCliente" class="form-label">
+              Nombre
+            </label>
+
+            <input type="text" id="editarNombreCliente" class="form-control">
+
+          </div>
+
+          <div class="mb-3">
+
+            <label for="editarApellidoCliente" class="form-label">
+              Apellido
+            </label>
+
+            <input type="text" id="editarApellidoCliente" class="form-control">
+
+          </div>
+
+          <div class="mb-3">
+
+            <label for="editarEmailCliente" class="form-label">
+              Email
+            </label>
+
+            <input type="email" id="editarEmailCliente" class="form-control">
+
+          </div>
+
+          <div class="mb-3">
+
+            <label for="editarTelefonoCliente" class="form-label">
+              Teléfono
+            </label>
+
+            <input type="text" id="editarTelefonoCliente" class="form-control">
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button class="btn btn-primary" onclick="guardarEdicionCliente()">
+            Guardar cambios
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalClientesInactivos" tabindex="-1">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">
+            <i class="bi bi-people me-2"></i>Clientes inactivos
+          </h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <div id="clientesInactivos" class="row g-3"></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalEmpleado" tabindex="-1">
+
+    <div class="modal-dialog modal-lg">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">Nuevo empleado</h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <div class="row g-3">
+
+            <div class="col-md-6">
+
+              <label for="nombreEmpleado" class="form-label">
+                Nombre
+              </label>
+
+              <input type="text" id="nombreEmpleado" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="apellidoEmpleado" class="form-label">
+                Apellido
+              </label>
+
+              <input type="text" id="apellidoEmpleado" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="dniEmpleado" class="form-label">
+                DNI
+              </label>
+
+              <input type="text" id="dniEmpleado" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="telefonoEmpleado" class="form-label">
+                Teléfono
+              </label>
+
+              <input type="text" id="telefonoEmpleado" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="emailEmpleado" class="form-label">
+                Email
+              </label>
+
+              <input type="email" id="emailEmpleado" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="cargoEmpleado" class="form-label">
+                Cargo
+              </label>
+
+              <input type="text" id="cargoEmpleado" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="fechaIngresoEmpleado" class="form-label">
+                Fecha de ingreso
+              </label>
+
+              <input type="date" id="fechaIngresoEmpleado" class="form-control">
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button class="btn btn-primary" onclick="guardarEmpleado()">
+            Guardar
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalEditarEmpleado" tabindex="-1">
+
+    <div class="modal-dialog modal-lg">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">Editar empleado</h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <input type="hidden" id="editarEmpleadoId">
+
+          <div class="row g-3">
+
+            <div class="col-md-6">
+
+              <label for="editarNombreEmpleado" class="form-label">
+                Nombre
+              </label>
+
+              <input type="text" id="editarNombreEmpleado" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="editarApellidoEmpleado" class="form-label">
+                Apellido
+              </label>
+
+              <input type="text" id="editarApellidoEmpleado" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="editarDniEmpleado" class="form-label">
+                DNI
+              </label>
+
+              <input type="text" id="editarDniEmpleado" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="editarTelefonoEmpleado" class="form-label">
+                Teléfono
+              </label>
+
+              <input type="text" id="editarTelefonoEmpleado" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="editarEmailEmpleado" class="form-label">
+                Email
+              </label>
+
+              <input type="email" id="editarEmailEmpleado" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="editarCargoEmpleado" class="form-label">
+                Cargo
+              </label>
+
+              <input type="text" id="editarCargoEmpleado" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="editarFechaIngresoEmpleado" class="form-label">
+                Fecha de ingreso
+              </label>
+
+              <input type="date" id="editarFechaIngresoEmpleado" class="form-control">
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button class="btn btn-primary" onclick="guardarEdicionEmpleado()">
+            Guardar cambios
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalEmpleadosInactivos" tabindex="-1">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">
+            <i class="bi bi-person-badge me-2"></i>Empleados inactivos
+          </h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <div id="empleadosInactivos" class="row g-3"></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalProveedor" tabindex="-1">
+
+    <div class="modal-dialog modal-lg">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">
+            <i class="bi bi-truck me-2"></i>Nuevo proveedor
+          </h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <div class="row g-3">
+
+            <div class="col-md-6">
+
+              <label for="nombreProveedor" class="form-label">
+                Nombre / Razón social
+              </label>
+
+              <input type="text" id="nombreProveedor" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="cuitProveedor" class="form-label">
+                CUIT
+              </label>
+
+              <input type="text" id="cuitProveedor" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="telefonoProveedor" class="form-label">
+                Teléfono
+              </label>
+
+              <input type="text" id="telefonoProveedor" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="emailProveedor" class="form-label">
+                Email
+              </label>
+
+              <input type="email" id="emailProveedor" class="form-control">
+
+            </div>
+
+            <div class="col-12">
+
+              <label for="direccionProveedor" class="form-label">
+                Dirección
+              </label>
+
+              <input type="text" id="direccionProveedor" class="form-control">
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button class="btn btn-primary" onclick="guardarProveedor()">
+            Guardar
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalEditarProveedor" tabindex="-1">
+
+    <div class="modal-dialog modal-lg">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">
+            <i class="bi bi-pencil-square me-2"></i>Editar proveedor
+          </h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <input type="hidden" id="editarProveedorId">
+
+          <div class="row g-3">
+
+            <div class="col-md-6">
+
+              <label for="editarNombreProveedor" class="form-label">
+                Nombre / Razón social
+              </label>
+
+              <input type="text" id="editarNombreProveedor" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="editarCuitProveedor" class="form-label">
+                CUIT
+              </label>
+
+              <input type="text" id="editarCuitProveedor" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="editarTelefonoProveedor" class="form-label">
+                Teléfono
+              </label>
+
+              <input type="text" id="editarTelefonoProveedor" class="form-control">
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label for="editarEmailProveedor" class="form-label">
+                Email
+              </label>
+
+              <input type="email" id="editarEmailProveedor" class="form-control">
+
+            </div>
+
+            <div class="col-12">
+
+              <label for="editarDireccionProveedor" class="form-label">
+                Dirección
+              </label>
+
+              <input type="text" id="editarDireccionProveedor" class="form-control">
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button class="btn btn-primary" onclick="guardarEdicionProveedor()">
+            Guardar cambios
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalProveedoresInactivos" tabindex="-1">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">
+            <i class="bi bi-truck me-2"></i>Proveedores inactivos
+          </h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body">
+
+          <div id="proveedoresInactivos" class="row g-3"></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalMovimientoStock" tabindex="-1">
+
+    <div class="modal-dialog">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-arrow-left-right me-2"></i>Nuevo movimiento de stock
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label for="productoMovimientoStock" class="form-label">Producto</label>
+            <select id="productoMovimientoStock" class="form-select">
+              <option value="">Seleccionar producto</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="empleadoMovimientoStock" class="form-label">Empleado</label>
+            <select id="empleadoMovimientoStock" class="form-select">
+              <option value="">Seleccionar empleado</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="proveedorMovimientoStock" class="form-label">Proveedor</label>
+            <select id="proveedorMovimientoStock" class="form-select">
+              <option value="">Seleccionar proveedor</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="tipoNuevoMovimientoStock" class="form-label">Tipo de movimiento</label>
+            <select id="tipoNuevoMovimientoStock" class="form-select">
+              <option value="">Seleccionar tipo</option>
+              <option value="entrada">Entrada</option>
+              <option value="salida">Salida</option>
+              <option value="ajuste">Ajuste</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="cantidadMovimientoStock" class="form-label">Cantidad</label>
+            <input type="number" id="cantidadMovimientoStock" class="form-control" min="1">
+          </div>
+
+          <div class="mb-3">
+            <label for="motivoMovimientoStock" class="form-label">Motivo</label>
+            <textarea id="motivoMovimientoStock" class="form-control" rows="3"
+              placeholder="Ej: ingreso de mercadería"></textarea>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="guardarMovimientoStock()">
+            <i class="bi bi-check-lg me-1"></i>Guardar movimiento
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="modalDetalleVenta" tabindex="-1">
+
+    <div class="modal-dialog modal-xl">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">
+            <i class="bi bi-receipt me-2"></i>Detalle de venta
+          </h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        </div>
+
+        <div class="modal-body" id="detalleVentaContenido"></div>
+
+      </div>
+
+    </div>
+
+  </div>
+  <div class="modal fade" id="modalDevolucion" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-arrow-counterclockwise me-2"></i>
+            Registrar devolución
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+
+
+          <div class="mb-3">
+            <label for="buscarVentaDevolucion" class="form-label fw-bold">
+              Buscar venta
+            </label>
+
+            <input type="text" id="buscarVentaDevolucion" class="form-control"
+              placeholder="Buscar por número de venta o cliente..." autocomplete="off">
+          </div>
+
+          <div class="mb-3">
+            <label for="ventaDevolucion" class="form-label fw-bold">
+              Venta a devolver
+            </label>
+
+            <select id="ventaDevolucion" class="form-select" required>
+              <option value="">Seleccione una venta</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="empleadoDevolucion" class="form-label fw-bold">
+              Empleado responsable
+            </label>
+
+            <select id="empleadoDevolucion" class="form-select" required>
+              <option value="">Cargando empleados...</option>
+            </select>
+          </div>
+
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              Productos y cantidades
+            </label>
+            <div id="productosDevolucion">
+              <p class="text-muted">Seleccione una venta.</p>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="tipoCreditoDevolucion" class="form-label fw-bold">
+              Tipo de devolución
+            </label>
+            <select id="tipoCreditoDevolucion" class="form-select">
+              <option value="">Seleccione una opción</option>
+              <option value="saldo_favor">Saldo a favor del cliente</option>
+              <option value="reintegro">Reintegro de dinero</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="motivoDevolucion" class="form-label fw-bold">
+              Motivo
+            </label>
+            <textarea id="motivoDevolucion" class="form-control" rows="3"
+              placeholder="Indique el motivo de la devolución"></textarea>
+          </div>
+
+          <div class="alert alert-info mb-0">
+            <i class="bi bi-info-circle me-1"></i>
+            El sistema actualizará el stock al registrar la devolución.
+            Los reintegros quedarán pendientes hasta su confirmación.
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button type="button" class="btn btn-primary" onclick="guardarDevolucion()">
+            <i class="bi bi-check-lg me-1"></i>
+            Registrar devolución
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="app.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <style>
-    .card-producto {
 
-      transition: .25s;
 
-      border-radius: 15px;
 
-    }
-
-    .card-producto:hover {
-
-      transform: translateY(-6px);
-
-      box-shadow: 0 .8rem 1.6rem rgba(0, 0, 0, .15);
-
-    }
-
-    .card-producto hr {
-
-      opacity: .15;
-
-    }
-  </style>
 </body>
 
 </html>

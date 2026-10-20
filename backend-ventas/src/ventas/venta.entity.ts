@@ -4,15 +4,16 @@ import {
   Column,
   OneToMany,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 import { DetalleVenta } from './detalle-venta.entity';
 import { Cliente } from '../clientes/entities/cliente.entity';
 import { MetodoPago } from '../metodo-pago/metodo-pago.entity';
+import { Empleado } from '../empleados/empleado.entity';
 
 @Entity()
 export class Venta {
-
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -28,15 +29,21 @@ export class Venta {
   })
   total!: number;
 
-  @ManyToOne(() => Cliente, {
-    nullable: true,
-  })
+  @Column({ type: 'varchar', length: 20, default: 'confirmada' })
+estado!: 'confirmada' | 'pendiente' | 'cancelada';
+
+  @ManyToOne(() => Cliente, { nullable: true })
   cliente!: Cliente;
 
-  @ManyToOne(() => MetodoPago, {
-    nullable: true,
-  })
+  @ManyToOne(() => MetodoPago, { nullable: true })
   metodoPago!: MetodoPago;
+
+  @ManyToOne(() => Empleado, { nullable: true })
+  @JoinColumn({ name: 'empleadoId' })
+  empleado!: Empleado | null;
+
+  @Column({ nullable: true })
+  empleadoId!: number | null;
 
   @OneToMany(
     () => DetalleVenta,

@@ -1,5 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+
 import { Categoria } from '../categorias/categoria.entity';
+import { Proveedor } from '../proveedores/proveedor.entity';
+import { Empleado } from '../empleados/empleado.entity';
 
 @Entity()
 export class Producto {
@@ -33,6 +42,24 @@ export class Producto {
   @Column({ default: 0 })
   stock!: number;
 
-  @ManyToOne(() => Categoria, categoria => categoria.productos, { eager: true })
+  @ManyToOne(
+    () => Categoria,
+    (categoria) => categoria.productos,
+    { eager: true },
+  )
   categoria!: Categoria;
+
+  @ManyToOne(() => Proveedor, { nullable: true })
+  @JoinColumn({ name: 'proveedorId' })
+  proveedor!: Proveedor | null;
+
+  @Column({ nullable: true })
+  proveedorId!: number | null;
+
+  @ManyToOne(() => Empleado, { nullable: true })
+  @JoinColumn({ name: 'empleadoCargaId' })
+  empleadoCarga!: Empleado | null;
+
+  @Column({ nullable: true })
+  empleadoCargaId!: number | null;
 }

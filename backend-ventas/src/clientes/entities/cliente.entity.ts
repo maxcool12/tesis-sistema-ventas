@@ -38,6 +38,9 @@ telefono!: string;
 })
 activo!: boolean;
 
+@Column('decimal', { precision: 10, scale: 2, default: 0 })
+saldoFavor!: number;
+
 @CreateDateColumn()
 createdAt!: Date;
 

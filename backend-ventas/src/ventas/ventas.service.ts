@@ -2,7 +2,6 @@ import {
   Injectable,
   BadRequestException,
 } from '@nestjs/common';
-
 import { InjectRepository } from '@nestjs/typeorm';
 import { Venta } from './venta.entity';
 import { DetalleVenta } from './detalle-venta.entity';
@@ -10,7 +9,11 @@ import { Producto } from '../productos/producto.entity';
 import { Repository, DataSource } from 'typeorm';
 import { Cliente } from '../clientes/entities/cliente.entity';
 import { MetodoPago } from '../metodo-pago/metodo-pago.entity';
+import { Empleado } from '../empleados/empleado.entity';
+import { MovimientoStock } from '../movimientos-stock/movimiento-stock.entity';
 import { CrearVentaDto } from './dto/crear-venta.dto';
+import { DevolucionVenta } from '../devoluciones-ventas/devolucion-venta.entity';
+import { DetalleDevolucionVenta } from '../devoluciones-ventas/detalle-devolucion-venta.entity';
 
 @Injectable()
 export class VentasService {
@@ -33,10 +36,17 @@ export class VentasService {
     private dataSource: DataSource,
   ) {}
 
-  async crearVenta(data: CrearVentaDto) {
-    return await this.dataSource.transaction(async (manager) => {
+  async crearVenta(data: CrearVentaDto & { empleadoId: number }) {
+    return this.dataSource.transaction(async (manager) => {
+      const clienteRepo = manager.getRepository(Cliente);
+      const metodoPagoRepo = manager.getRepository(MetodoPago);
+      const empleadoRepo = manager.getRepository(Empleado);
+      const productoRepo = manager.getRepository(Producto);
+      const ventaRepo = manager.getRepository(Venta);
+      const detalleRepo = manager.getRepository(DetalleVenta);
+      const movimientoRepo = manager.getRepository(MovimientoStock);
 
-      const cliente = await manager.getRepository(Cliente).findOne({
+      const cliente = await clienteRepo.findOne({
         where: {
           id: data.clienteId,
           activo: true,
@@ -49,18 +59,35 @@ export class VentasService {
         );
       }
 
-      const metodoPago = await manager
-        .getRepository(MetodoPago)
-        .findOne({
-          where: {
-            id: data.metodoPagoId,
-            activo: true,
-          },
-        });
+      const metodoPago = await metodoPagoRepo.findOne({
+        where: {
+          id: data.metodoPagoId,
+          activo: true,
+        },
+      });
 
       if (!metodoPago) {
         throw new BadRequestException(
           'Método de pago no encontrado o inactivo',
+        );
+      }
+
+      const empleado = await empleadoRepo.findOne({
+        where: {
+          id: data.empleadoId,
+          activo: true,
+        },
+      });
+
+      if (!empleado) {
+        throw new BadRequestException(
+          'Empleado no encontrado o inactivo',
+        );
+      }
+
+      if (!data.productos?.length) {
+        throw new BadRequestException(
+          'La venta debe contener al menos un producto',
         );
       }
 
@@ -69,8 +96,7 @@ export class VentasService {
       );
 
       const idsRepetidos = productosIds.filter(
-        (id, index) =>
-          productosIds.indexOf(id) !== index,
+        (id, index) => productosIds.indexOf(id) !== index,
       );
 
       if (idsRepetidos.length > 0) {
@@ -79,73 +105,98 @@ export class VentasService {
         );
       }
 
-      const venta = manager.getRepository(Venta).create({
+      const venta = ventaRepo.create({
         total: 0,
         cliente,
         metodoPago,
+        empleado,
+        empleadoId: empleado.id,
       });
 
       const detalles: DetalleVenta[] = [];
 
       for (const item of data.productos) {
-
-        const producto = await manager
-          .getRepository(Producto)
-          .findOne({
-            where: {
-              id: item.productoId,
-              activo: true,
-            },
-          });
+        const producto = await productoRepo.findOne({
+          where: {
+            id: item.productoId,
+            activo: true,
+          },
+          lock: {
+            mode: 'pessimistic_write',
+          },
+        });
 
         if (!producto) {
           throw new BadRequestException(
-            'Producto no encontrado o inactivo',
+            `Producto ${item.productoId} no encontrado o inactivo`,
           );
         }
 
-        if (producto.stock < item.cantidad) {
+        if (
+          !Number.isInteger(Number(item.cantidad)) ||
+          Number(item.cantidad) <= 0
+        ) {
+          throw new BadRequestException(
+            'La cantidad debe ser un número entero mayor a cero',
+          );
+        }
+
+        if (Number(producto.stock) < Number(item.cantidad)) {
           throw new BadRequestException(
             `Stock insuficiente para ${producto.nombre}`,
           );
         }
 
-        producto.stock -= item.cantidad;
+        producto.stock =
+          Number(producto.stock) - Number(item.cantidad);
 
-        await manager
-          .getRepository(Producto)
-          .save(producto);
+        await productoRepo.save(producto);
 
-        const detalle = manager
-          .getRepository(DetalleVenta)
-          .create({
-            producto,
-            cantidad: item.cantidad,
-            precio_unitario: Number(producto.precio),
-            total:
-              Number(producto.precio) * item.cantidad,
-          });
+        const detalle = detalleRepo.create({
+          producto,
+          cantidad: Number(item.cantidad),
+          precio_unitario: Number(producto.precio),
+          total:
+            Number(producto.precio) * Number(item.cantidad),
+        });
 
         venta.total +=
-          Number(producto.precio) * item.cantidad;
+          Number(producto.precio) * Number(item.cantidad);
 
         detalles.push(detalle);
+
+        const movimiento = movimientoRepo.create({
+          productoId: producto.id,
+          empleadoId: empleado.id,
+          proveedorId: null,
+          tipo: 'salida',
+          cantidad: Number(item.cantidad),
+          motivo: 'Salida automática por venta',
+        });
+
+        await movimientoRepo.save(movimiento);
       }
 
-      const ventaGuardada = await manager
-        .getRepository(Venta)
-        .save(venta);
+      const ventaGuardada = await ventaRepo.save(venta);
 
       for (const detalle of detalles) {
-
         detalle.venta = ventaGuardada;
-
-        await manager
-          .getRepository(DetalleVenta)
-          .save(detalle);
+        await detalleRepo.save(detalle);
       }
 
-      return ventaGuardada;
+      return ventaRepo.findOne({
+        where: {
+          id: ventaGuardada.id,
+        },
+        relations: {
+          cliente: true,
+          metodoPago: true,
+          empleado: true,
+          detalles: {
+            producto: true,
+          },
+        },
+      });
     });
   }
 
@@ -161,22 +212,11 @@ export class VentasService {
 
     const query = this.ventaRepo
       .createQueryBuilder('venta')
-      .leftJoinAndSelect(
-        'venta.cliente',
-        'cliente',
-      )
-      .leftJoinAndSelect(
-        'venta.metodoPago',
-        'metodoPago',
-      )
-      .leftJoinAndSelect(
-        'venta.detalles',
-        'detalles',
-      )
-      .leftJoinAndSelect(
-        'detalles.producto',
-        'producto',
-      )
+      .leftJoinAndSelect('venta.cliente', 'cliente')
+      .leftJoinAndSelect('venta.metodoPago', 'metodoPago')
+      .leftJoinAndSelect('venta.empleado', 'empleado')
+      .leftJoinAndSelect('venta.detalles', 'detalles')
+      .leftJoinAndSelect('detalles.producto', 'producto')
       .orderBy('venta.fecha', 'DESC')
       .skip(skip)
       .take(limit);
@@ -194,21 +234,18 @@ export class VentasService {
     }
 
     if (clienteId) {
-      query.andWhere(
-        'cliente.id = :clienteId',
-        { clienteId },
-      );
+      query.andWhere('cliente.id = :clienteId', {
+        clienteId,
+      });
     }
 
     if (metodoPagoId) {
-      query.andWhere(
-        'metodoPago.id = :metodoPagoId',
-        { metodoPagoId },
-      );
+      query.andWhere('metodoPago.id = :metodoPagoId', {
+        metodoPagoId,
+      });
     }
 
-    const [ventas, total] =
-      await query.getManyAndCount();
+    const [ventas, total] = await query.getManyAndCount();
 
     return {
       data: ventas,
@@ -222,189 +259,197 @@ export class VentasService {
   async findOne(id: number) {
     const venta = await this.ventaRepo
       .createQueryBuilder('venta')
-      .leftJoinAndSelect(
-        'venta.cliente',
-        'cliente',
-      )
-      .leftJoinAndSelect(
-        'venta.metodoPago',
-        'metodoPago',
-      )
-      .leftJoinAndSelect(
-        'venta.detalles',
-        'detalles',
-      )
-      .leftJoinAndSelect(
-        'detalles.producto',
-        'producto',
-      )
+      .leftJoinAndSelect('venta.cliente', 'cliente')
+      .leftJoinAndSelect('venta.metodoPago', 'metodoPago')
+      .leftJoinAndSelect('venta.empleado', 'empleado')
+      .leftJoinAndSelect('venta.detalles', 'detalles')
+      .leftJoinAndSelect('detalles.producto', 'producto')
       .where('venta.id = :id', { id })
       .getOne();
 
     if (!venta) {
-      throw new BadRequestException(
-        'Venta no encontrada',
-      );
+      throw new BadRequestException('Venta no encontrada');
     }
 
     return venta;
   }
 
-  async getDashboard(
-    desde?: string,
-    hasta?: string,
-  ) {
-    const query = this.detalleRepo
-      .createQueryBuilder('detalle')
-      .leftJoinAndSelect(
-        'detalle.venta',
-        'venta',
-      )
-      .leftJoinAndSelect(
-        'venta.metodoPago',
-        'metodoPago',
-      )
-      .leftJoinAndSelect(
-        'detalle.producto',
-        'producto',
-      )
-      .leftJoinAndSelect(
-        'producto.categoria',
-        'categoria',
-      );
+  
+async getDashboard(
+  desde?: string,
+  hasta?: string,
+  clienteId?: number,
+) {
+  const query = this.detalleRepo
+    .createQueryBuilder('detalle')
+    .leftJoinAndSelect('detalle.venta', 'venta')
+    .leftJoinAndSelect('venta.cliente', 'cliente')
+    .leftJoinAndSelect('venta.metodoPago', 'metodoPago')
+    .leftJoinAndSelect('detalle.producto', 'producto')
+    .leftJoinAndSelect('producto.categoria', 'categoria')
+    .where('venta.estado = :estado', { estado: 'confirmada' });
 
-    if (desde) {
-      query.andWhere('venta.fecha >= :desde', {
-        desde: `${desde} 00:00:00`,
-      });
-    }
-
-    if (hasta) {
-      query.andWhere('venta.fecha <= :hasta', {
-        hasta: `${hasta} 23:59:59`,
-      });
-    }
-
-    const detalles = await query.getMany();
-
-    console.log('DESDE:', desde);
-    console.log('HASTA:', hasta);
-    console.log(
-      'DETALLES ENCONTRADOS:',
-      detalles.length,
-    );
-
-    const productosActivos =
-      await this.productoRepo.count({
-        where: { activo: true },
-      });
-
-    const productosInactivos =
-      await this.productoRepo.count({
-        where: { activo: false },
-      });
-
-    let totalIngresos = 0;
-    let totalProductos = 0;
-    let cantidadVentas = 0;
-
-    const productosVendidos: any = {};
-    const categorias: any = {};
-    const metodosPago: any = {};
-
-    for (const d of detalles) {
-
-      totalIngresos += Number(d.total);
-
-      totalProductos += d.cantidad;
-
-      const nombreProducto =
-        d.producto.nombre;
-
-      if (!productosVendidos[nombreProducto]) {
-        productosVendidos[nombreProducto] = 0;
-      }
-
-      productosVendidos[nombreProducto] +=
-        d.cantidad;
-
-      const categoria =
-        d.producto?.categoria?.nombre ||
-        'Sin categoría';
-
-      if (!categorias[categoria]) {
-        categorias[categoria] = 0;
-      }
-
-      categorias[categoria] += Number(d.total);
-
-      const metodoPago =
-        d.venta?.metodoPago?.nombre ||
-        'Sin método de pago';
-
-      if (!metodosPago[metodoPago]) {
-        metodosPago[metodoPago] = 0;
-      }
-
-      metodosPago[metodoPago] +=
-        Number(d.total);
-    }
-
-    const ventasPorCategoria =
-      Object.keys(categorias).map((c) => ({
-        categoria: c,
-        total: categorias[c],
-      }));
-
-    const ventasPorMetodoPago =
-      Object.keys(metodosPago).map((m) => ({
-        metodoPago: m,
-        total: metodosPago[m],
-      }));
-
-    const productoMasVendido =
-      Object.keys(productosVendidos).length > 0
-        ? Object.entries(productosVendidos)
-            .sort(
-              (a: any, b: any) =>
-                b[1] - a[1],
-            )[0][0]
-        : 'Sin ventas';
-
-    const ventaQuery =
-      this.ventaRepo
-        .createQueryBuilder('venta');
-
-    if (desde) {
-      ventaQuery.andWhere(
-        'venta.fecha >= :desde',
-        {
-          desde: `${desde} 00:00:00`,
-        },
-      );
-    }
-
-    if (hasta) {
-      ventaQuery.andWhere(
-        'venta.fecha <= :hasta',
-        {
-          hasta: `${hasta} 23:59:59`,
-        },
-      );
-    }
-
-    cantidadVentas =
-      await ventaQuery.getCount();
-
-    return {
-      totalIngresos,
-      totalProductos,
-      cantidadVentas,
-      productoMasVendido,
-      productosActivos,
-      productosInactivos,
-      ventasPorCategoria,
-      ventasPorMetodoPago,
-    };
+  if (desde) {
+    query.andWhere('venta.fecha >= :desde', {
+      desde: `${desde} 00:00:00`,
+    });
   }
+
+  if (hasta) {
+    query.andWhere('venta.fecha <= :hasta', {
+      hasta: `${hasta} 23:59:59`,
+    });
+  }
+
+  if (clienteId) {
+    query.andWhere('cliente.id = :clienteId', { clienteId });
+  }
+
+  const detalles = await query.getMany();
+
+  const devolucionesQuery = this.dataSource
+    .getRepository(DetalleDevolucionVenta)
+    .createQueryBuilder('detalleDevolucion')
+    .leftJoinAndSelect('detalleDevolucion.devolucion', 'devolucion')
+    .leftJoinAndSelect('devolucion.venta', 'ventaDevolucion')
+    .leftJoinAndSelect('ventaDevolucion.cliente', 'clienteDevolucion')
+    .leftJoinAndSelect('ventaDevolucion.metodoPago', 'metodoPagoDevolucion')
+    .leftJoinAndSelect('detalleDevolucion.producto', 'productoDevolucion')
+    .leftJoinAndSelect('productoDevolucion.categoria', 'categoriaDevolucion')
+    .where('devolucion.estadoCredito = :completado', {
+      completado: 'completado',
+    });
+
+  if (desde) {
+    devolucionesQuery.andWhere('devolucion.fecha >= :desde', {
+      desde: `${desde} 00:00:00`,
+    });
+  }
+
+  if (hasta) {
+    devolucionesQuery.andWhere('devolucion.fecha <= :hasta', {
+      hasta: `${hasta} 23:59:59`,
+    });
+  }
+
+  if (clienteId) {
+    devolucionesQuery.andWhere('clienteDevolucion.id = :clienteId', {
+      clienteId,
+    });
+  }
+
+  const detallesDevoluciones = await devolucionesQuery.getMany();
+
+  const productosActivos = await this.productoRepo.count({
+    where: { activo: true },
+  });
+
+  const productosInactivos = await this.productoRepo.count({
+    where: { activo: false },
+  });
+
+  let ventasBrutas = 0;
+  let totalDevoluciones = 0;
+  let totalProductosVendidos = 0;
+  let totalProductosDevueltos = 0;
+
+  const productosVendidos: Record<string, number> = {};
+  const categorias: Record<string, number> = {};
+  const metodosPago: Record<string, number> = {};
+
+  for (const detalle of detalles) {
+    const cantidad = Number(detalle.cantidad);
+    const total = Number(detalle.total);
+    const nombreProducto = detalle.producto.nombre;
+    const categoria = detalle.producto?.categoria?.nombre || 'Sin categoría';
+    const metodoPago = detalle.venta?.metodoPago?.nombre || 'Sin método de pago';
+
+    ventasBrutas += total;
+    totalProductosVendidos += cantidad;
+
+    productosVendidos[nombreProducto] =
+      (productosVendidos[nombreProducto] || 0) + cantidad;
+
+    categorias[categoria] = (categorias[categoria] || 0) + total;
+    metodosPago[metodoPago] = (metodosPago[metodoPago] || 0) + total;
+  }
+
+  for (const detalle of detallesDevoluciones) {
+    const cantidad = Number(detalle.cantidad);
+    const total = Number(detalle.total);
+    const nombreProducto = detalle.producto.nombre;
+    const categoria =
+      detalle.producto?.categoria?.nombre || 'Sin categoría';
+    const metodoPago =
+      detalle.devolucion?.venta?.metodoPago?.nombre || 'Sin método de pago';
+
+    totalDevoluciones += total;
+    totalProductosDevueltos += cantidad;
+
+    productosVendidos[nombreProducto] =
+      (productosVendidos[nombreProducto] || 0) - cantidad;
+
+    categorias[categoria] = (categorias[categoria] || 0) - total;
+    metodosPago[metodoPago] = (metodosPago[metodoPago] || 0) - total;
+  }
+
+  const totalIngresos = ventasBrutas - totalDevoluciones;
+  const totalProductos = totalProductosVendidos - totalProductosDevueltos;
+
+  const ventasPorCategoria = Object.entries(categorias).map(
+    ([categoria, total]) => ({
+      categoria,
+      total: Math.max(0, total),
+    }),
+  );
+
+  const ventasPorMetodoPago = Object.entries(metodosPago).map(
+    ([metodoPago, total]) => ({
+      metodoPago,
+      total: Math.max(0, total),
+    }),
+  );
+
+  const productoMasVendido =
+    Object.entries(productosVendidos)
+      .filter(([, cantidad]) => cantidad > 0)
+      .sort((a, b) => b[1] - a[1])[0]?.[0] || 'Sin ventas';
+
+  const ventaQuery = this.ventaRepo
+    .createQueryBuilder('venta')
+    .leftJoin('venta.cliente', 'cliente')
+    .where('venta.estado = :estado', { estado: 'confirmada' });
+
+  if (desde) {
+    ventaQuery.andWhere('venta.fecha >= :desde', {
+      desde: `${desde} 00:00:00`,
+    });
+  }
+
+  if (hasta) {
+    ventaQuery.andWhere('venta.fecha <= :hasta', {
+      hasta: `${hasta} 23:59:59`,
+    });
+  }
+
+  if (clienteId) {
+    ventaQuery.andWhere('cliente.id = :clienteId', { clienteId });
+  }
+
+  const cantidadVentas = await ventaQuery.getCount();
+
+  return {
+    ventasBrutas,
+    totalDevoluciones,
+    totalIngresos,
+    totalProductos,
+    cantidadVentas,
+    productoMasVendido,
+    productosActivos,
+    productosInactivos,
+    ventasPorCategoria,
+    ventasPorMetodoPago,
+  };
+}
+
 }
