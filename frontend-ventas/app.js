@@ -640,86 +640,41 @@ async function eliminarProducto(id) {
   }
 }
 
+
+let listaProductosInactivos = [];
+
 async function mostrarInactivos() {
   try {
-    const res = await fetch(
-      `${API}/productos/todos`
-    );
+    const res = await fetch(`${API}/productos/todos`);
 
     if (!res.ok) {
-      throw new Error(
-        "No se pudieron cargar los productos."
-      );
+      throw new Error("No se pudieron cargar los productos.");
     }
 
     const lista = await res.json();
 
-    const inactivos =
-      lista.filter(p => !p.activo);
-
-    const contenedor =
-      document.getElementById(
-        "productosInactivos"
-      );
-
-    contenedor.innerHTML = "";
-
-    if (!inactivos.length) {
-      contenedor.innerHTML = `
-        <div class="col-12">
-          <div class="alert alert-info">
-            No existen productos inactivos.
-          </div>
-        </div>
-      `;
-    } else {
-      inactivos.forEach(producto => {
-        contenedor.innerHTML += `
-          <div class="col-md-4 mb-3">
-            <div class="card border-danger shadow-sm">
-              <div class="card-body">
-
-                <h5>
-                  ${escapeHtml(producto.nombre)}
-                </h5>
-
-                <p>
-                  ${escapeHtml(
-          producto.descripcion ||
-          "Sin descripción"
-        )}
-                </p>
-
-                <p>
-                  Precio:
-                  $${Number(
-          producto.precio || 0
-        ).toLocaleString("es-AR")}
-                </p>
-
-                <span class="badge bg-danger">
-                  INACTIVO
-                </span>
-
-                <hr>
-
-                <button
-                  class="btn btn-success w-100"
-                  onclick="reactivarProducto(${producto.id})">
-                  <i class="bi bi-arrow-counterclockwise me-1"></i>
-                  Reactivar
-                </button>
-
-              </div>
-            </div>
-          </div>
-        `;
-      });
+    if (!Array.isArray(lista)) {
+      throw new Error("La respuesta de productos no es válida.");
     }
 
-    new bootstrap.Modal(
+    listaProductosInactivos = lista.filter(
+      producto => !producto.activo
+    );
+
+    const buscador = document.getElementById("buscarInactivos");
+
+    // Limpiar la búsqueda al abrir el modal.
+    buscador.value = "";
+
+    // Evitar registrar múltiples eventos.
+    buscador.oninput = renderizarInactivos;
+
+    renderizarInactivos();
+
+    bootstrap.Modal.getOrCreateInstance(
       document.getElementById("modalInactivos")
     ).show();
+
   } catch (error) {
     alertaError(
       error.message ||
@@ -727,6 +682,74 @@ async function mostrarInactivos() {
     );
   }
 }
+
+function renderizarInactivos() {
+  const contenedor = document.getElementById("productosInactivos");
+  const contador = document.getElementById("contadorInactivos");
+  const texto = document
+    .getElementById("buscarInactivos")
+    .value.trim()
+    .toLocaleLowerCase("es-AR");
+
+  const filtrados = listaProductosInactivos.filter(producto => {
+    const nombre = String(producto.nombre || "").toLocaleLowerCase("es-AR");
+    const descripcion = String(
+      producto.descripcion || ""
+    ).toLocaleLowerCase("es-AR");
+
+    return nombre.includes(texto) || descripcion.includes(texto);
+  });
+
+  contador.textContent =
+    `${filtrados.length} de ${listaProductosInactivos.length} productos`;
+
+  if (filtrados.length === 0) {
+    contenedor.innerHTML = `
+      <div class="col-12">
+        <div class="alert alert-info mb-0">
+          ${listaProductosInactivos.length === 0
+        ? "No existen productos inactivos."
+        : "No se encontraron productos que coincidan con la búsqueda."
+      }
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  contenedor.innerHTML = filtrados.map(producto => `
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card border-danger shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
+
+          <h5>${escapeHtml(producto.nombre || "Sin nombre")}</h5>
+
+          <p class="text-muted">
+            ${escapeHtml(producto.descripcion || "Sin descripción")}
+          </p>
+
+          <p>
+            Precio:
+            $${Number(producto.precio || 0).toLocaleString("es-AR")}
+          </p>
+
+          <div class="mb-3">
+            <span class="badge bg-danger">INACTIVO</span>
+          </div>
+
+          <button
+            class="btn btn-success w-100 mt-auto"
+            onclick="reactivarProducto(${Number(producto.id)})">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>
+            Reactivar
+          </button>
+
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
 
 async function reactivarProducto(id) {
   const ok = await confirmar(
@@ -1145,6 +1168,9 @@ async function reactivarCategoria(id) {
     alertaError(error.message);
   }
 }
+
+let listaCategoriasInactivas = [];
+
 async function mostrarCategoriasInactivas() {
   try {
     const res = await fetch(`${API}/categorias/todos`);
@@ -1154,48 +1180,24 @@ async function mostrarCategoriasInactivas() {
     }
 
     const lista = await res.json();
-    const inactivas = lista.filter(c => !c.activo);
+
+    if (!Array.isArray(lista)) {
+      throw new Error("La respuesta de categorías no es válida.");
+    }
+
+    listaCategoriasInactivas = lista.filter(c => !c.activo);
+
+    const buscador = document.getElementById("buscarCategoriasInactivas");
     const contenedor = document.getElementById("categoriasInactivas");
 
-    if (!contenedor) return;
-
-    contenedor.innerHTML = "";
-
-    if (!inactivas.length) {
-      contenedor.innerHTML = `
-        <div class="col-12">
-          <div class="alert alert-info mb-0">
-            No existen categorías inactivas.
-          </div>
-        </div>
-      `;
-    } else {
-      inactivas.forEach(categoria => {
-        contenedor.innerHTML += `
-          <div class="col-md-6 col-lg-4 mb-3">
-            <div class="card border-danger shadow-sm h-100">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h5 class="fw-bold mb-0">
-                    <i class="bi bi-tag me-2"></i>
-                    ${escapeHtml(categoria.nombre)}
-                  </h5>
-                  <span class="badge bg-danger">Inactiva</span>
-                </div>
-                ${esAdmin() ? `
-                  <button
-                    class="btn btn-success w-100"
-                    onclick="reactivarCategoriaDesdeInactivos(${categoria.id})">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i>
-                    Reactivar
-                  </button>
-                ` : ""}
-              </div>
-            </div>
-          </div>
-        `;
-      });
+    if (!contenedor || !buscador) {
+      throw new Error("Faltan elementos del buscador de categorías inactivas en el HTML.");
     }
+
+    buscador.value = "";
+    buscador.oninput = renderizarCategoriasInactivas;
+
+    renderizarCategoriasInactivas();
 
     const modal = bootstrap.Modal.getOrCreateInstance(
       document.getElementById("modalCategoriasInactivas")
@@ -1203,9 +1205,72 @@ async function mostrarCategoriasInactivas() {
 
     modal.show();
   } catch (error) {
-    alertaError(error.message || "No se pudieron cargar las categorías inactivas.");
+    alertaError(
+      error.message || "No se pudieron cargar las categorías inactivas."
+    );
   }
 }
+
+function renderizarCategoriasInactivas() {
+  const buscador = document.getElementById("buscarCategoriasInactivas");
+  const contenedor = document.getElementById("categoriasInactivas");
+  const contador = document.getElementById("contadorCategoriasInactivas");
+
+  if (!buscador || !contenedor) return;
+
+  const texto = buscador.value.trim().toLocaleLowerCase("es-AR");
+
+  const filtradas = listaCategoriasInactivas.filter(categoria =>
+    String(categoria.nombre || "")
+      .toLocaleLowerCase("es-AR")
+      .includes(texto)
+  );
+
+  if (contador) {
+    contador.textContent =
+      `${filtradas.length} de ${listaCategoriasInactivas.length} categorías`;
+  }
+
+  if (!filtradas.length) {
+    contenedor.innerHTML = `
+      <div class="col-12">
+        <div class="alert alert-info mb-0">
+          ${listaCategoriasInactivas.length === 0
+        ? "No existen categorías inactivas."
+        : "No se encontraron categorías que coincidan con la búsqueda."
+      }
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  contenedor.innerHTML = filtradas.map(categoria => `
+    <div class="col-md-6 col-lg-4 mb-3">
+      <div class="card border-danger shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">
+              <i class="bi bi-tag me-2"></i>
+              ${escapeHtml(categoria.nombre || "Sin nombre")}
+            </h5>
+            <span class="badge bg-danger">Inactiva</span>
+          </div>
+
+          ${esAdmin() ? `
+            <button
+              class="btn btn-success w-100 mt-auto"
+              onclick="reactivarCategoriaDesdeInactivos(${Number(categoria.id)})">
+              <i class="bi bi-arrow-counterclockwise me-1"></i>
+              Reactivar
+            </button>
+          ` : ""}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
 
 async function reactivarCategoriaDesdeInactivos(id) {
   const ok = await confirmar(
@@ -1523,6 +1588,9 @@ async function eliminarMetodoPago(id) {
     alertaError(error.message);
   }
 }
+
+let listaMetodosPagoInactivos = [];
+
 async function mostrarMetodosPagoInactivos() {
   try {
     const res = await fetch(`${API}/metodos-pago/todos`);
@@ -1532,58 +1600,96 @@ async function mostrarMetodosPagoInactivos() {
     }
 
     const lista = await res.json();
-    const inactivos = lista.filter(m => !m.activo);
-    const contenedor = document.getElementById("metodosPagoInactivos");
 
-    if (!contenedor) return;
-
-    contenedor.innerHTML = "";
-
-    if (!inactivos.length) {
-      contenedor.innerHTML = `
-        <div class="col-12">
-          <div class="alert alert-info mb-0">
-            No existen métodos de pago inactivos.
-          </div>
-        </div>
-      `;
-    } else {
-      inactivos.forEach(metodo => {
-        contenedor.innerHTML += `
-          <div class="col-md-6 col-lg-4 mb-3">
-            <div class="card border-danger shadow-sm h-100">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h5 class="fw-bold mb-0">
-                    <i class="bi bi-credit-card me-2"></i>
-                    ${escapeHtml(metodo.nombre)}
-                  </h5>
-                  <span class="badge bg-danger">Inactivo</span>
-                </div>
-                ${esAdmin() ? `
-                  <button
-                    class="btn btn-success w-100"
-                    onclick="reactivarMetodoPago(${metodo.id})">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i>
-                    Reactivar
-                  </button>
-                ` : ""}
-              </div>
-            </div>
-          </div>
-        `;
-      });
+    if (!Array.isArray(lista)) {
+      throw new Error("La respuesta de métodos de pago no es válida.");
     }
 
-    const modal = bootstrap.Modal.getOrCreateInstance(
-      document.getElementById("modalMetodosPagoInactivos")
-    );
+    listaMetodosPagoInactivos = lista.filter(m => !m.activo);
 
-    modal.show();
+    const buscador = document.getElementById("buscarMetodosPagoInactivos");
+    const contenedor = document.getElementById("metodosPagoInactivos");
+
+    if (!buscador || !contenedor) {
+      throw new Error("Faltan elementos del buscador de métodos de pago inactivos en el HTML.");
+    }
+
+    buscador.value = "";
+    buscador.oninput = renderizarMetodosPagoInactivos;
+
+    renderizarMetodosPagoInactivos();
+
+    bootstrap.Modal.getOrCreateInstance(
+      document.getElementById("modalMetodosPagoInactivos")
+    ).show();
+
   } catch (error) {
-    alertaError(error.message || "No se pudieron cargar los métodos de pago inactivos.");
+    alertaError(
+      error.message || "No se pudieron cargar los métodos de pago inactivos."
+    );
   }
 }
+
+function renderizarMetodosPagoInactivos() {
+  const buscador = document.getElementById("buscarMetodosPagoInactivos");
+  const contenedor = document.getElementById("metodosPagoInactivos");
+  const contador = document.getElementById("contadorMetodosPagoInactivos");
+
+  if (!buscador || !contenedor) return;
+
+  const texto = buscador.value.trim().toLocaleLowerCase("es-AR");
+
+  const filtrados = listaMetodosPagoInactivos.filter(metodo =>
+    String(metodo.nombre || "")
+      .toLocaleLowerCase("es-AR")
+      .includes(texto)
+  );
+
+  if (contador) {
+    contador.textContent =
+      `${filtrados.length} de ${listaMetodosPagoInactivos.length} métodos de pago`;
+  }
+
+  if (filtrados.length === 0) {
+    contenedor.innerHTML = `
+      <div class="col-12">
+        <div class="alert alert-info mb-0">
+          ${listaMetodosPagoInactivos.length === 0
+        ? "No existen métodos de pago inactivos."
+        : "No se encontraron métodos de pago que coincidan con la búsqueda."
+      }
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  contenedor.innerHTML = filtrados.map(metodo => `
+    <div class="col-md-6 col-lg-4 mb-3">
+      <div class="card border-danger shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">
+              <i class="bi bi-credit-card me-2"></i>
+              ${escapeHtml(metodo.nombre || "Sin nombre")}
+            </h5>
+            <span class="badge bg-danger">Inactivo</span>
+          </div>
+
+          ${esAdmin() ? `
+            <button
+              class="btn btn-success w-100 mt-auto"
+              onclick="reactivarMetodoPago(${Number(metodo.id)})">
+              <i class="bi bi-arrow-counterclockwise me-1"></i>
+              Reactivar
+            </button>
+          ` : ""}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
 
 async function reactivarMetodoPago(id) {
   const ok = await confirmar(
@@ -2025,6 +2131,9 @@ async function eliminarCliente(id) {
   }
 }
 
+
+let listaClientesInactivos = [];
+
 async function mostrarClientesInactivos() {
   try {
     const res = await fetch(`${API}/clientes/todos`);
@@ -2034,68 +2143,121 @@ async function mostrarClientesInactivos() {
     }
 
     const lista = await res.json();
-    const inactivos = lista.filter(c => !c.activo);
-    const contenedor = document.getElementById("clientesInactivos");
 
-    if (!contenedor) return;
-
-    contenedor.innerHTML = "";
-
-    if (!inactivos.length) {
-      contenedor.innerHTML = `
-        <div class="col-12">
-          <div class="alert alert-info mb-0">
-            No existen clientes inactivos.
-          </div>
-        </div>
-      `;
-    } else {
-      inactivos.forEach(cliente => {
-        contenedor.innerHTML += `
-          <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card border-danger shadow-sm h-100">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                  <div>
-                    <h5 class="fw-bold mb-1">
-                      ${escapeHtml(cliente.nombre)} ${escapeHtml(cliente.apellido)}
-                    </h5>
-                    <span class="badge bg-danger">Inactivo</span>
-                  </div>
-                  <span class="badge bg-secondary">ID ${cliente.id}</span>
-                </div>
-                <p class="mb-2">
-                  <i class="bi bi-envelope me-2"></i>
-                  ${escapeHtml(cliente.email)}
-                </p>
-                <p class="mb-3">
-                  <i class="bi bi-telephone me-2"></i>
-                  ${escapeHtml(cliente.telefono || "Sin teléfono")}
-                </p>
-                ${esAdmin() ? `
-                  <button
-                    class="btn btn-success w-100"
-                    onclick="reactivarCliente(${cliente.id})">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i>
-                    Reactivar
-                  </button>
-                ` : ""}
-              </div>
-            </div>
-          </div>
-        `;
-      });
+    if (!Array.isArray(lista)) {
+      throw new Error("La respuesta de clientes no es válida.");
     }
 
-    const modal = bootstrap.Modal.getOrCreateInstance(
-      document.getElementById("modalClientesInactivos")
-    );
+    listaClientesInactivos = lista.filter(c => !c.activo);
 
-    modal.show();
+    const buscador = document.getElementById("buscarClientesInactivos");
+    const contenedor = document.getElementById("clientesInactivos");
+
+    if (!buscador || !contenedor) {
+      throw new Error("Faltan elementos del buscador de clientes inactivos en el HTML.");
+    }
+
+    buscador.value = "";
+    buscador.oninput = renderizarClientesInactivos;
+
+    renderizarClientesInactivos();
+
+    bootstrap.Modal.getOrCreateInstance(
+      document.getElementById("modalClientesInactivos")
+    ).show();
+
   } catch (error) {
-    alertaError(error.message || "No se pudieron cargar los clientes inactivos.");
+    alertaError(
+      error.message || "No se pudieron cargar los clientes inactivos."
+    );
   }
 }
+
+function renderizarClientesInactivos() {
+  const buscador = document.getElementById("buscarClientesInactivos");
+  const contenedor = document.getElementById("clientesInactivos");
+  const contador = document.getElementById("contadorClientesInactivos");
+
+  if (!buscador || !contenedor) return;
+
+  const texto = buscador.value.trim().toLocaleLowerCase("es-AR");
+
+  const filtrados = listaClientesInactivos.filter(cliente => {
+    const datos = [
+      cliente.id,
+      cliente.nombre,
+      cliente.apellido,
+      cliente.email,
+      cliente.telefono
+    ];
+
+    return datos.some(valor =>
+      String(valor ?? "").toLocaleLowerCase("es-AR").includes(texto)
+    );
+  });
+
+  if (contador) {
+    contador.textContent =
+      `${filtrados.length} de ${listaClientesInactivos.length} clientes`;
+  }
+
+  if (filtrados.length === 0) {
+    contenedor.innerHTML = `
+      <div class="col-12">
+        <div class="alert alert-info mb-0">
+          ${listaClientesInactivos.length === 0
+        ? "No existen clientes inactivos."
+        : "No se encontraron clientes que coincidan con la búsqueda."
+      }
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  contenedor.innerHTML = filtrados.map(cliente => `
+    <div class="col-lg-4 col-md-6 mb-3">
+      <div class="card border-danger shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
+
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h5 class="fw-bold mb-1">
+                ${escapeHtml(cliente.nombre || "")}
+                ${escapeHtml(cliente.apellido || "")}
+              </h5>
+              <span class="badge bg-danger">Inactivo</span>
+            </div>
+
+            <span class="badge bg-secondary">
+              ID ${Number(cliente.id)}
+            </span>
+          </div>
+
+          <p class="mb-2 text-break">
+            <i class="bi bi-envelope me-2"></i>
+            ${escapeHtml(cliente.email || "Sin correo")}
+          </p>
+
+          <p class="mb-3">
+            <i class="bi bi-telephone me-2"></i>
+            ${escapeHtml(cliente.telefono || "Sin teléfono")}
+          </p>
+
+          ${esAdmin() ? `
+            <button
+              class="btn btn-success w-100 mt-auto"
+              onclick="reactivarCliente(${Number(cliente.id)})">
+              <i class="bi bi-arrow-counterclockwise me-1"></i>
+              Reactivar
+            </button>
+          ` : ""}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
 
 async function reactivarCliente(id) {
   const ok = await confirmar(
@@ -3689,56 +3851,45 @@ window.onload =
     }
   };
 async function cargarClientesDashboard() {
-  const select =
-    document.getElementById(
-      "dashboardCliente"
-    );
+  const select = document.getElementById("dashboardCliente");
 
   if (!select) return;
 
   try {
-    const res =
-      await fetch(
-        `${API}/clientes/todos`
-      );
+    const res = await fetch(`${API}/clientes/todos`);
 
     if (!res.ok) {
-      throw new Error(
-        "No se pudieron cargar los clientes."
-      );
+      throw new Error("No se pudieron cargar los clientes.");
     }
 
-    const datos =
-      await res.json();
+    const respuesta = await res.json();
 
-    const clientesActivos =
-      datos.filter(
-        cliente =>
-          cliente.activo
-      );
 
-    select.innerHTML = `
-      <option value="">
-        Todos los clientes
-      </option>
-    `;
+    const datos = Array.isArray(respuesta)
+      ? respuesta
+      : respuesta.data;
 
-    clientesActivos.forEach(
-      cliente => {
-        select.innerHTML += `
-          <option value="${cliente.id}">
-            ${escapeHtml(
-          `${cliente.nombre} ${cliente.apellido}`
-        )}
-          </option>
-        `;
-      }
+    if (!Array.isArray(datos)) {
+      throw new Error("La respuesta de clientes no tiene el formato esperado.");
+    }
+
+    const clientesActivos = datos.filter(cliente =>
+      cliente.activo === undefined || cliente.activo === true
     );
+
+    select.innerHTML = `<option value="">Todos los clientes</option>`;
+
+    clientesActivos.forEach(cliente => {
+      select.innerHTML += `
+                <option value="${cliente.id}">
+                    ${escapeHtml(`${cliente.nombre} ${cliente.apellido}`)}
+                </option>
+            `;
+    });
+
   } catch (error) {
-    alertaError(
-      error.message ||
-      "No se pudieron cargar los clientes."
-    );
+    console.error("Error al cargar clientes del dashboard:", error);
+    alertaError(error.message || "Error al cargar los clientes.");
   }
 }
 async function cargarEmpleados() {
@@ -4127,6 +4278,9 @@ async function eliminarEmpleado(id) {
   }
 }
 
+
+let listaEmpleadosInactivos = [];
+
 async function mostrarEmpleadosInactivos() {
   try {
     const res = await fetch(`${API}/empleados/inactivos`);
@@ -4136,70 +4290,123 @@ async function mostrarEmpleadosInactivos() {
     }
 
     const lista = await res.json();
+
+    if (!Array.isArray(lista)) {
+      throw new Error("La respuesta de empleados no es válida.");
+    }
+
+    listaEmpleadosInactivos = lista;
+
+    const buscador = document.getElementById("buscarEmpleadosInactivos");
     const contenedor = document.getElementById("empleadosInactivos");
 
-    if (!contenedor) {
-      throw new Error("No existe el contenedor de empleados inactivos");
+    if (!buscador || !contenedor) {
+      throw new Error(
+        "Faltan elementos del buscador de empleados inactivos en el HTML."
+      );
     }
 
-    contenedor.innerHTML = "";
+    buscador.value = "";
+    buscador.oninput = renderizarEmpleadosInactivos;
 
-    if (!lista.length) {
-      contenedor.innerHTML = `
-        <div class="col-12">
-          <div class="alert alert-info mb-0">
-            No existen empleados inactivos.
-          </div>
-        </div>
-      `;
-    } else {
-      lista.forEach(empleado => {
-        contenedor.innerHTML += `
-          <div class="col-md-6 col-lg-4">
-            <div class="card border-danger shadow-sm h-100">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                  <h5 class="fw-bold mb-0">
-                    ${escapeHtml(empleado.nombre)} ${escapeHtml(empleado.apellido)}
-                  </h5>
-                  <span class="badge bg-danger">Inactivo</span>
-                </div>
-
-                <p class="mb-2">
-                  <strong>DNI:</strong> ${escapeHtml(empleado.dni)}
-                </p>
-
-                <p class="mb-2">
-                  <strong>Cargo:</strong> ${escapeHtml(empleado.cargo)}
-                </p>
-
-                <p class="mb-3">
-                  <strong>Email:</strong> ${escapeHtml(empleado.email || "Sin email")}
-                </p>
-
-                ${esAdmin() ? `
-                  <button
-                    class="btn btn-success w-100"
-                    onclick="reactivarEmpleado(${empleado.id})">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i>
-                    Reactivar
-                  </button>
-                ` : ""}
-              </div>
-            </div>
-          </div>
-        `;
-      });
-    }
+    renderizarEmpleadosInactivos();
 
     bootstrap.Modal.getOrCreateInstance(
       document.getElementById("modalEmpleadosInactivos")
     ).show();
 
   } catch (error) {
-    alertaError(error.message);
+    alertaError(
+      error.message || "No se pudieron cargar los empleados inactivos."
+    );
   }
 }
+
+function renderizarEmpleadosInactivos() {
+  const buscador = document.getElementById("buscarEmpleadosInactivos");
+  const contenedor = document.getElementById("empleadosInactivos");
+  const contador = document.getElementById("contadorEmpleadosInactivos");
+
+  if (!buscador || !contenedor) return;
+
+  const texto = buscador.value.trim().toLocaleLowerCase("es-AR");
+
+  const filtrados = listaEmpleadosInactivos.filter(empleado => {
+    const campos = [
+      empleado.id,
+      empleado.nombre,
+      empleado.apellido,
+      empleado.dni,
+      empleado.cargo,
+      empleado.email
+    ];
+
+    return campos.some(valor =>
+      String(valor ?? "").toLocaleLowerCase("es-AR").includes(texto)
+    );
+  });
+
+  if (contador) {
+    contador.textContent =
+      `${filtrados.length} de ${listaEmpleadosInactivos.length} empleados`;
+  }
+
+  if (filtrados.length === 0) {
+    contenedor.innerHTML = `
+      <div class="col-12">
+        <div class="alert alert-info mb-0">
+          ${listaEmpleadosInactivos.length === 0
+        ? "No existen empleados inactivos."
+        : "No se encontraron empleados que coincidan con la búsqueda."
+      }
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  contenedor.innerHTML = filtrados.map(empleado => `
+    <div class="col-md-6 col-lg-4 mb-3">
+      <div class="card border-danger shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
+
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <h5 class="fw-bold mb-0">
+              ${escapeHtml(empleado.nombre || "")}
+              ${escapeHtml(empleado.apellido || "")}
+            </h5>
+            <span class="badge bg-danger">Inactivo</span>
+          </div>
+
+          <p class="mb-2">
+            <strong>DNI:</strong>
+            ${escapeHtml(empleado.dni ?? "Sin DNI")}
+          </p>
+
+          <p class="mb-2">
+            <strong>Cargo:</strong>
+            ${escapeHtml(empleado.cargo || "Sin cargo")}
+          </p>
+
+          <p class="mb-3 text-break">
+            <strong>Email:</strong>
+            ${escapeHtml(empleado.email || "Sin email")}
+          </p>
+
+          ${esAdmin() ? `
+            <button
+              class="btn btn-success w-100 mt-auto"
+              onclick="reactivarEmpleado(${Number(empleado.id)})">
+              <i class="bi bi-arrow-counterclockwise me-1"></i>
+              Reactivar
+            </button>
+          ` : ""}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
 
 async function reactivarEmpleado(id) {
   const confirmacion = await Swal.fire({
@@ -4576,6 +4783,9 @@ async function eliminarProveedor(id) {
   }
 }
 
+
+let listaProveedoresInactivos = [];
+
 async function mostrarProveedoresInactivos() {
   try {
     const res = await fetch(`${API}/proveedores/inactivos`);
@@ -4586,80 +4796,122 @@ async function mostrarProveedoresInactivos() {
 
     const lista = await res.json();
 
-    const contenedor =
-      document.getElementById("proveedoresInactivos");
-
-    if (!contenedor) return;
-
-    contenedor.innerHTML = "";
-
-    if (!lista.length) {
-      contenedor.innerHTML = `
-        <div class="col-12">
-          <div class="alert alert-info mb-0">
-            No existen proveedores inactivos.
-          </div>
-        </div>
-      `;
-    } else {
-      lista.forEach(proveedor => {
-        contenedor.innerHTML += `
-          <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card border-danger shadow-sm h-100">
-              <div class="card-body">
-
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                  <h5 class="fw-bold mb-0">
-                    <i class="bi bi-truck me-2"></i>
-                    ${escapeHtml(proveedor.nombre)}
-                  </h5>
-
-                  <span class="badge bg-danger">
-                    Inactivo
-                  </span>
-                </div>
-
-                <p class="mb-2">
-                  <strong>CUIT:</strong>
-                  ${escapeHtml(proveedor.cuit)}
-                </p>
-
-                <p class="mb-2">
-                  <strong>Teléfono:</strong>
-                  ${escapeHtml(proveedor.telefono || "Sin teléfono")}
-                </p>
-
-                <p class="mb-3">
-                  <strong>Email:</strong>
-                  ${escapeHtml(proveedor.email || "Sin email")}
-                </p>
-
-                ${esAdmin()
-            ? `
-                      <button
-                        class="btn btn-success w-100"
-                        onclick="reactivarProveedor(${proveedor.id})">
-                        <i class="bi bi-arrow-counterclockwise me-1"></i>
-                        Reactivar
-                      </button>
-                    `
-            : ""
-          }
-
-              </div>
-            </div>
-          </div>
-        `;
-      });
+    if (!Array.isArray(lista)) {
+      throw new Error("La respuesta de proveedores no es válida.");
     }
+
+    listaProveedoresInactivos = lista;
+
+    const buscador = document.getElementById("buscarProveedoresInactivos");
+    const contenedor = document.getElementById("proveedoresInactivos");
+
+    if (!buscador || !contenedor) {
+      throw new Error(
+        "Faltan elementos del buscador de proveedores inactivos en el HTML."
+      );
+    }
+
+    buscador.value = "";
+    buscador.oninput = renderizarProveedoresInactivos;
+
+    renderizarProveedoresInactivos();
 
     bootstrap.Modal.getOrCreateInstance(
       document.getElementById("modalProveedoresInactivos")
     ).show();
+
   } catch (error) {
-    alertaError(error.message);
+    alertaError(
+      error.message || "No se pudieron cargar los proveedores inactivos."
+    );
   }
 }
+
+function renderizarProveedoresInactivos() {
+  const buscador = document.getElementById("buscarProveedoresInactivos");
+  const contenedor = document.getElementById("proveedoresInactivos");
+  const contador = document.getElementById("contadorProveedoresInactivos");
+
+  if (!buscador || !contenedor) return;
+
+  const texto = buscador.value.trim().toLocaleLowerCase("es-AR");
+
+  const filtrados = listaProveedoresInactivos.filter(proveedor => {
+    const campos = [
+      proveedor.id,
+      proveedor.nombre,
+      proveedor.cuit,
+      proveedor.telefono,
+      proveedor.email
+    ];
+
+    return campos.some(valor =>
+      String(valor ?? "").toLocaleLowerCase("es-AR").includes(texto)
+    );
+  });
+
+  if (contador) {
+    contador.textContent =
+      `${filtrados.length} de ${listaProveedoresInactivos.length} proveedores`;
+  }
+
+  if (filtrados.length === 0) {
+    contenedor.innerHTML = `
+      <div class="col-12">
+        <div class="alert alert-info mb-0">
+          ${listaProveedoresInactivos.length === 0
+        ? "No existen proveedores inactivos."
+        : "No se encontraron proveedores que coincidan con la búsqueda."
+      }
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  contenedor.innerHTML = filtrados.map(proveedor => `
+    <div class="col-lg-4 col-md-6 mb-3">
+      <div class="card border-danger shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
+
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <h5 class="fw-bold mb-0">
+              <i class="bi bi-truck me-2"></i>
+              ${escapeHtml(proveedor.nombre || "Sin nombre")}
+            </h5>
+
+            <span class="badge bg-danger">Inactivo</span>
+          </div>
+
+          <p class="mb-2">
+            <strong>CUIT:</strong>
+            ${escapeHtml(proveedor.cuit ?? "Sin CUIT")}
+          </p>
+
+          <p class="mb-2">
+            <strong>Teléfono:</strong>
+            ${escapeHtml(proveedor.telefono || "Sin teléfono")}
+          </p>
+
+          <p class="mb-3 text-break">
+            <strong>Email:</strong>
+            ${escapeHtml(proveedor.email || "Sin email")}
+          </p>
+
+          ${esAdmin() ? `
+            <button
+              class="btn btn-success w-100 mt-auto"
+              onclick="reactivarProveedor(${Number(proveedor.id)})">
+              <i class="bi bi-arrow-counterclockwise me-1"></i>
+              Reactivar
+            </button>
+          ` : ""}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
 
 async function reactivarProveedor(id) {
   const ok = await confirmar(
@@ -5140,7 +5392,7 @@ async function cargarDevoluciones() {
       );
 
       const tipo = devolucion.tipoCredito ?? devolucion.tipo ?? "-";
-      const estado = devolucion.estado ?? "-";
+      const estado = devolucion.estadoCredito ?? devolucion.estado ?? "-";
       const motivo = devolucion.motivo ?? "-";
 
       let colorEstado = "secondary";

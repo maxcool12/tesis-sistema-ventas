@@ -1095,33 +1095,54 @@
 
   </div>
 
+
   <div class="modal fade" id="modalInactivos" tabindex="-1">
-
-    <div class="modal-dialog modal-lg">
-
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <div class="modal-content">
 
         <div class="modal-header">
-
           <h5 class="modal-title">
-            <i class="bi bi-archive me-2"></i>Productos inactivos
+            <i class="bi bi-archive me-2"></i>
+            Productos inactivos
           </h5>
 
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar">
+          </button>
         </div>
 
         <div class="modal-body">
 
+
+          <div class="mb-3">
+            <label for="buscarInactivos" class="form-label">
+              Buscar producto
+            </label>
+
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-search"></i>
+              </span>
+
+              <input type="text" id="buscarInactivos" class="form-control"
+                placeholder="Buscar por nombre o descripción..." autocomplete="off">
+            </div>
+
+            <small class="text-muted">
+              Escribí el nombre o una palabra de la descripción.
+            </small>
+          </div>
+
+
+          <div id="contadorInactivos" class="text-muted small mb-3"></div>
+
+
           <div id="productosInactivos" class="row g-3"></div>
 
         </div>
-
       </div>
-
     </div>
-
   </div>
+
 
   <div class="modal fade" id="modalCategoria" tabindex="-1">
 
@@ -1209,33 +1230,51 @@
 
   </div>
 
+
   <div class="modal fade" id="modalCategoriasInactivas" tabindex="-1">
-
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
 
         <div class="modal-header">
-
           <h5 class="modal-title">
-            <i class="bi bi-tags me-2"></i>Categorías inactivas
+            <i class="bi bi-tags me-2"></i>
+            Categorías inactivas
           </h5>
 
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar">
+          </button>
         </div>
 
         <div class="modal-body">
 
+
+          <div class="mb-3">
+            <label for="buscarCategoriasInactivas" class="form-label">
+              Buscar categoría
+            </label>
+
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-search"></i>
+              </span>
+
+              <input type="text" id="buscarCategoriasInactivas" class="form-control" placeholder="Buscar por nombre..."
+                autocomplete="off">
+            </div>
+          </div>
+
+
+          <div id="contadorCategoriasInactivas" class="text-muted small mb-3">
+          </div>
+
+
           <div id="categoriasInactivas" class="row g-3"></div>
 
         </div>
-
       </div>
-
     </div>
-
   </div>
+
 
   <div class="modal fade" id="modalMetodoPago" tabindex="-1">
 
@@ -1323,33 +1362,48 @@
 
   </div>
 
+
   <div class="modal fade" id="modalMetodosPagoInactivos" tabindex="-1">
-
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
 
         <div class="modal-header">
-
           <h5 class="modal-title">
-            <i class="bi bi-credit-card me-2"></i>Métodos de pago inactivos
+            <i class="bi bi-credit-card me-2"></i>
+            Métodos de pago inactivos
           </h5>
 
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar">
+          </button>
         </div>
 
         <div class="modal-body">
 
+          <div class="mb-3">
+            <label for="buscarMetodosPagoInactivos" class="form-label">
+              Buscar método de pago
+            </label>
+
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-search"></i>
+              </span>
+
+              <input type="text" id="buscarMetodosPagoInactivos" class="form-control" placeholder="Buscar por nombre..."
+                autocomplete="off">
+            </div>
+          </div>
+
+          <div id="contadorMetodosPagoInactivos" class="text-muted small mb-3">
+          </div>
+
           <div id="metodosPagoInactivos" class="row g-3"></div>
 
         </div>
-
       </div>
-
     </div>
-
   </div>
+
 
   <div class="modal fade" id="modalCliente" tabindex="-1">
 
@@ -1522,6 +1576,27 @@
         </div>
 
         <div class="modal-body">
+
+
+          <div class="mb-3">
+            <label for="buscarClientesInactivos" class="form-label">
+              Buscar cliente
+            </label>
+
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-search"></i>
+              </span>
+
+              <input type="text" id="buscarClientesInactivos" class="form-control"
+                placeholder="Nombre, apellido, correo, teléfono o ID..." autocomplete="off">
+            </div>
+          </div>
+
+          <div id="contadorClientesInactivos" class="text-muted small mb-3">
+          </div>
+
+          <div id="clientesInactivos" class="row g-3"></div>
 
           <div id="clientesInactivos" class="row g-3"></div>
 
@@ -1773,6 +1848,26 @@
 
         <div class="modal-body">
 
+          <div class="mb-3">
+            <label for="buscarEmpleadosInactivos" class="form-label">
+              Buscar empleado
+            </label>
+
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-search"></i>
+              </span>
+
+              <input type="text" id="buscarEmpleadosInactivos" class="form-control"
+                placeholder="Nombre, apellido, DNI, cargo o email..." autocomplete="off">
+            </div>
+          </div>
+
+          <div id="contadorEmpleadosInactivos" class="text-muted small mb-3">
+          </div>
+
+          <div id="empleadosInactivos" class="row g-3"></div>
+
           <div id="empleadosInactivos" class="row g-3"></div>
 
         </div>
@@ -1986,6 +2081,26 @@
         </div>
 
         <div class="modal-body">
+
+          <div class="mb-3">
+            <label for="buscarProveedoresInactivos" class="form-label">
+              Buscar proveedor
+            </label>
+
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-search"></i>
+              </span>
+
+              <input type="text" id="buscarProveedoresInactivos" class="form-control"
+                placeholder="Nombre, CUIT, teléfono o email..." autocomplete="off">
+            </div>
+          </div>
+
+          <div id="contadorProveedoresInactivos" class="text-muted small mb-3">
+          </div>
+
+          <div id="proveedoresInactivos" class="row g-3"></div>
 
           <div id="proveedoresInactivos" class="row g-3"></div>
 

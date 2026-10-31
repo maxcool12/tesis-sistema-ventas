@@ -34,8 +34,8 @@ export class CreateClienteDto {
 
   @IsString()
   @IsNotEmpty({ message: 'El teléfono es obligatorio.' })
-  @Matches(/^\d{7,30}$/, {
-    message: 'El teléfono debe contener solo números y al menos 7 dígitos.',
+  @Matches(/^(?=(?:\D*\d){7,15}\D*$)\+?[\d\s()-]+$/, {
+    message: 'El teléfono debe contener entre 7 y 15 números.',
   })
   telefono!: string;
 }

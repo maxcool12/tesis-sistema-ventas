@@ -1,3 +1,4 @@
+
 import {
     IsEmail,
     IsNotEmpty,
@@ -6,10 +7,11 @@ import {
     Length,
     Matches,
 } from 'class-validator';
+
 import { IsCuitValido } from '../validators/cuit.validator';
 
-
 export class CreateProveedorDto {
+
     @IsString()
     @IsNotEmpty({ message: 'El nombre es obligatorio.' })
     @Length(2, 100, {
@@ -19,16 +21,16 @@ export class CreateProveedorDto {
         message: 'El nombre solo puede contener letras y espacios.',
     })
     nombre!: string;
-    @IsCuitValido({
-        message: 'El CUIT ingresado no es válido.',
-    })
-    cuit!: string;
+
     @IsString()
     @IsNotEmpty({ message: 'El CUIT es obligatorio.' })
     @Matches(/^\d{11}$/, {
         message: 'El CUIT debe contener exactamente 11 números.',
     })
-
+    @IsCuitValido({
+        message: 'El CUIT ingresado no es válido.',
+    })
+    cuit!: string;
 
     @IsOptional()
     @IsString()
