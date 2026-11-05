@@ -641,9 +641,14 @@
 
                 <input type="text" id="buscarClienteVenta" class="form-control mb-2" placeholder="Buscar cliente...">
 
-                <select id="clienteVenta" class="form-select">
+                <select id="clienteVenta" class="form-select" onchange="actualizarCarrito()">
                   <option value="">Seleccionar cliente</option>
                 </select>
+                <div class="alert alert-info mt-2 mb-0 py-2">
+                  <i class="bi bi-wallet2 me-1"></i>
+                  <strong>Saldo a favor disponible:</strong>
+                  <span id="saldoDisponibleCliente">$0,00</span>
+                </div>
 
               </div>
 
@@ -714,6 +719,29 @@
               <div id="carrito"></div>
 
               <hr>
+
+              <div class="mb-3">
+                <label for="saldoFavorAplicar" class="form-label fw-bold">
+                  Saldo a favor que desea utilizar
+                </label>
+
+                <input type="number" id="saldoFavorAplicar" class="form-control" min="0" step="0.01" value="0" disabled
+                  oninput="actualizarResumenSaldo()">
+
+                <small class="text-muted">
+                  El importe no puede superar el saldo disponible ni el total de la compra.
+                </small>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted">Saldo aplicado:</span>
+                <strong id="saldoAplicadoCarrito">$0,00</strong>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">Importe restante:</span>
+                <strong id="importeRestanteCarrito">$0,00</strong>
+              </div>
 
               <div class="d-flex justify-content-between align-items-center">
 

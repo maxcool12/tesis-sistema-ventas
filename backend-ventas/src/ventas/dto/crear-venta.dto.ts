@@ -4,6 +4,8 @@ import {
   ValidateNested,
   Min,
   ArrayMinSize,
+  IsOptional,
+  IsNumber,
 } from 'class-validator';
 
 import { Type } from 'class-transformer';
@@ -23,9 +25,15 @@ export class CrearVentaDto {
   @Min(1)
   clienteId!: number;
 
+  @IsOptional()
   @IsInt()
   @Min(1)
-  metodoPagoId!: number;
+  metodoPagoId?: number | null;
+
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  saldoFavorUsado?: number;
 
   @IsInt()
   @Min(1)

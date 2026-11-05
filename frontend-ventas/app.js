@@ -2341,15 +2341,17 @@ async function cargarClientesVenta() {
 
     clientes.forEach(cliente => {
       select.innerHTML += `
-        <option value="${cliente.id}">
-          ${escapeHtml(cliente.nombre)}
-          ${escapeHtml(cliente.apellido)}
-          -
-          ${escapeHtml(cliente.email)}
-        </option>
-      `;
+    <option
+      value="${cliente.id}"
+      data-saldo="${Number(cliente.saldoFavor || 0)}"
+    >
+      ${escapeHtml(cliente.nombre)}
+      ${escapeHtml(cliente.apellido)}
+      -
+      ${escapeHtml(cliente.email)}
+    </option>
+  `;
     });
-
     actualizarCarrito();
   } catch (error) {
     alertaError(error.message);
@@ -2593,6 +2595,23 @@ function actualizarCarrito() {
       ?.trim() ||
     "Sin cliente seleccionado";
 
+
+
+  const saldoDisponible = Number(
+    clienteSelect?.selectedOptions?.[0]?.dataset?.saldo || 0
+  );
+
+
+  const elementoSaldo = document.getElementById("saldoDisponibleCliente");
+
+  if (elementoSaldo) {
+    elementoSaldo.textContent =
+      `$${saldoDisponible.toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}`;
+  }
+
   tabla.innerHTML = `
     <div class="alert alert-light border mb-3">
       <strong>
@@ -2697,6 +2716,64 @@ function actualizarCarrito() {
     "totalCarrito"
   ).innerText =
     `$${Number(total).toLocaleString("es-AR")}`;
+  actualizarResumenSaldo();
+}
+
+function actualizarResumenSaldo() {
+
+  const clienteSelect = document.getElementById("clienteVenta");
+  const inputSaldo = document.getElementById("saldoFavorAplicar");
+
+  const saldoAplicadoElemento = document.getElementById("saldoAplicadoCarrito");
+  const importeRestanteElemento = document.getElementById("importeRestanteCarrito");
+
+  if (!inputSaldo) return;
+
+
+  const saldoDisponible = Number(
+    clienteSelect?.selectedOptions?.[0]?.dataset?.saldo || 0
+  );
+
+
+  const total = carrito.reduce((acumulado, item) => {
+    return acumulado + (Number(item.precio) * Number(item.cantidad));
+  }, 0);
+
+
+  const maximoAplicable = Math.min(saldoDisponible, total);
+
+
+  inputSaldo.disabled = !clienteSelect?.value || maximoAplicable <= 0;
+
+  inputSaldo.max = maximoAplicable.toFixed(2);
+
+
+  let saldoAplicado = Number(inputSaldo.value) || 0;
+
+
+  saldoAplicado = Math.max(0, Math.min(saldoAplicado, maximoAplicable));
+
+
+
+
+  const importeRestante = total - saldoAplicado;
+
+
+  if (saldoAplicadoElemento) {
+    saldoAplicadoElemento.textContent =
+      `$${saldoAplicado.toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}`;
+  }
+
+  if (importeRestanteElemento) {
+    importeRestanteElemento.textContent =
+      `$${importeRestante.toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}`;
+  }
 }
 
 function eliminarDelCarrito(indice) {
@@ -2715,37 +2792,64 @@ async function realizarVenta() {
     );
   }
 
-  const clienteId =
-    Number(
-      document.getElementById(
-        "clienteVenta"
-      ).value
-    );
+  const clienteId = Number(
+    document.getElementById("clienteVenta").value
+  );
 
-  const metodoPagoId =
-    Number(
-      document.getElementById(
-        "metodoPagoVenta"
-      ).value
-    );
+  const metodoPagoId = Number(
+    document.getElementById("metodoPagoVenta").value
+  );
 
   const empleadoId = Number(
     document.getElementById("empleadoVenta").value
   );
+
+  const saldoFavorUsado = Number(
+    document.getElementById("saldoFavorAplicar").value || 0
+  );
+
+
+  const totalVenta = carrito.reduce((acumulado, item) => {
+    return acumulado + (
+      Number(item.precio) * Number(item.cantidad)
+    );
+  }, 0);
+
+
+  const clienteSelect = document.getElementById("clienteVenta");
+
+  const saldoDisponible = Number(
+    clienteSelect.selectedOptions[0]?.dataset?.saldo || 0
+  );
+
+
+  const importeRestante = totalVenta - saldoFavorUsado;
+
   if (!empleadoId) {
     return alertaError("Debe seleccionar el empleado que realiza la venta.");
   }
 
   if (!clienteId) {
-    return alertaError(
-      "Debe seleccionar un cliente."
-    );
+    return alertaError("Debe seleccionar un cliente.");
   }
 
-  if (!metodoPagoId) {
-    return alertaError(
-      "Debe seleccionar un método de pago."
-    );
+  if (
+    !Number.isFinite(saldoFavorUsado) ||
+    saldoFavorUsado < 0
+  ) {
+    return alertaError("El saldo a favor ingresado no es válido.");
+  }
+
+  if (saldoFavorUsado > saldoDisponible) {
+    return alertaError("No puede utilizar más saldo del que tiene disponible el cliente.");
+  }
+
+  if (saldoFavorUsado > totalVenta) {
+    return alertaError("El saldo utilizado no puede superar el total de la compra.");
+  }
+
+  if (importeRestante > 0 && !metodoPagoId) {
+    return alertaError("Debe seleccionar un método de pago para el importe restante.");
   }
 
   try {
@@ -2758,8 +2862,9 @@ async function realizarVenta() {
         },
         body: JSON.stringify({
           clienteId,
-          metodoPagoId,
+          metodoPagoId: importeRestante > 0 ? metodoPagoId : null,
           empleadoId,
+          saldoFavorUsado,
           productos: carrito.map(item => ({
             productoId: item.productoId,
             cantidad: item.cantidad
@@ -2810,6 +2915,10 @@ async function realizarVenta() {
     document.getElementById(
       "cantidadVenta"
     ).value = 1;
+
+    document.getElementById(
+      "saldoFavorAplicar"
+    ).value = 0;
 
     document.getElementById("empleadoVenta").value = "";
 

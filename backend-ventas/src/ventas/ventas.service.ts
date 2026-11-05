@@ -34,7 +34,7 @@ export class VentasService {
     private metodoPagoRepo: Repository<MetodoPago>,
 
     private dataSource: DataSource,
-  ) {}
+  ) { }
 
   async crearVenta(data: CrearVentaDto & { empleadoId: number }) {
     return this.dataSource.transaction(async (manager) => {
@@ -51,6 +51,9 @@ export class VentasService {
           id: data.clienteId,
           activo: true,
         },
+        lock: {
+          mode: 'pessimistic_write',
+        },
       });
 
       if (!cliente) {
@@ -59,18 +62,17 @@ export class VentasService {
         );
       }
 
-      const metodoPago = await metodoPagoRepo.findOne({
-        where: {
-          id: data.metodoPagoId,
-          activo: true,
-        },
-      });
+      const saldoFavorUsado = Number(data.saldoFavorUsado ?? 0);
 
-      if (!metodoPago) {
+      if (!Number.isFinite(saldoFavorUsado) || saldoFavorUsado < 0) {
         throw new BadRequestException(
-          'Método de pago no encontrado o inactivo',
+          'El saldo a favor utilizado no es válido',
         );
       }
+
+      let metodoPago: MetodoPago | null = null;
+
+      
 
       const empleado = await empleadoRepo.findOne({
         where: {
@@ -105,13 +107,7 @@ export class VentasService {
         );
       }
 
-      const venta = ventaRepo.create({
-        total: 0,
-        cliente,
-        metodoPago,
-        empleado,
-        empleadoId: empleado.id,
-      });
+
 
       const detalles: DetalleVenta[] = [];
 
@@ -152,16 +148,15 @@ export class VentasService {
 
         await productoRepo.save(producto);
 
+        const totalDetalle =
+          Number(producto.precio) * Number(item.cantidad);
+
         const detalle = detalleRepo.create({
           producto,
           cantidad: Number(item.cantidad),
           precio_unitario: Number(producto.precio),
-          total:
-            Number(producto.precio) * Number(item.cantidad),
+          total: totalDetalle,
         });
-
-        venta.total +=
-          Number(producto.precio) * Number(item.cantidad);
 
         detalles.push(detalle);
 
@@ -176,6 +171,73 @@ export class VentasService {
 
         await movimientoRepo.save(movimiento);
       }
+      const totalVenta = Number(
+        detalles
+          .reduce(
+            (acumulado, detalle) =>
+              acumulado + Number(detalle.total),
+            0,
+          )
+          .toFixed(2),
+      );
+
+
+      const saldoDisponible = Number(cliente.saldoFavor);
+
+      if (saldoFavorUsado > saldoDisponible) {
+        throw new BadRequestException(
+          'El saldo a favor utilizado supera el saldo disponible del cliente',
+        );
+      }
+
+
+      if (saldoFavorUsado > totalVenta) {
+        throw new BadRequestException(
+          'El saldo a favor utilizado no puede superar el total de la venta',
+        );
+      }
+
+
+      const importeRestante = Number(
+        (totalVenta - saldoFavorUsado).toFixed(2),
+      );
+
+
+      if (importeRestante > 0) {
+        if (!data.metodoPagoId) {
+          throw new BadRequestException(
+            'Debe seleccionar un método de pago para el importe restante',
+          );
+        }
+
+        metodoPago = await metodoPagoRepo.findOne({
+          where: {
+            id: data.metodoPagoId,
+            activo: true,
+          },
+        });
+
+        if (!metodoPago) {
+          throw new BadRequestException(
+            'Método de pago no encontrado o inactivo',
+          );
+        }
+      }
+
+      cliente.saldoFavor = Number(
+        (saldoDisponible - saldoFavorUsado).toFixed(2),
+      );
+
+      await clienteRepo.save(cliente);
+
+      const venta = ventaRepo.create({
+        total: totalVenta,
+        saldoFavorUsado,
+        cliente,
+        metodoPago,
+        empleado,
+        empleadoId: empleado.id,
+      });
 
       const ventaGuardada = await ventaRepo.save(venta);
 
@@ -274,182 +336,182 @@ export class VentasService {
     return venta;
   }
 
-  
-async getDashboard(
-  desde?: string,
-  hasta?: string,
-  clienteId?: number,
-) {
-  const query = this.detalleRepo
-    .createQueryBuilder('detalle')
-    .leftJoinAndSelect('detalle.venta', 'venta')
-    .leftJoinAndSelect('venta.cliente', 'cliente')
-    .leftJoinAndSelect('venta.metodoPago', 'metodoPago')
-    .leftJoinAndSelect('detalle.producto', 'producto')
-    .leftJoinAndSelect('producto.categoria', 'categoria')
-    .where('venta.estado = :estado', { estado: 'confirmada' });
 
-  if (desde) {
-    query.andWhere('venta.fecha >= :desde', {
-      desde: `${desde} 00:00:00`,
+  async getDashboard(
+    desde?: string,
+    hasta?: string,
+    clienteId?: number,
+  ) {
+    const query = this.detalleRepo
+      .createQueryBuilder('detalle')
+      .leftJoinAndSelect('detalle.venta', 'venta')
+      .leftJoinAndSelect('venta.cliente', 'cliente')
+      .leftJoinAndSelect('venta.metodoPago', 'metodoPago')
+      .leftJoinAndSelect('detalle.producto', 'producto')
+      .leftJoinAndSelect('producto.categoria', 'categoria')
+      .where('venta.estado = :estado', { estado: 'confirmada' });
+
+    if (desde) {
+      query.andWhere('venta.fecha >= :desde', {
+        desde: `${desde} 00:00:00`,
+      });
+    }
+
+    if (hasta) {
+      query.andWhere('venta.fecha <= :hasta', {
+        hasta: `${hasta} 23:59:59`,
+      });
+    }
+
+    if (clienteId) {
+      query.andWhere('cliente.id = :clienteId', { clienteId });
+    }
+
+    const detalles = await query.getMany();
+
+    const devolucionesQuery = this.dataSource
+      .getRepository(DetalleDevolucionVenta)
+      .createQueryBuilder('detalleDevolucion')
+      .leftJoinAndSelect('detalleDevolucion.devolucion', 'devolucion')
+      .leftJoinAndSelect('devolucion.venta', 'ventaDevolucion')
+      .leftJoinAndSelect('ventaDevolucion.cliente', 'clienteDevolucion')
+      .leftJoinAndSelect('ventaDevolucion.metodoPago', 'metodoPagoDevolucion')
+      .leftJoinAndSelect('detalleDevolucion.producto', 'productoDevolucion')
+      .leftJoinAndSelect('productoDevolucion.categoria', 'categoriaDevolucion')
+      .where('devolucion.estadoCredito = :completado', {
+        completado: 'completado',
+      });
+
+    if (desde) {
+      devolucionesQuery.andWhere('devolucion.fecha >= :desde', {
+        desde: `${desde} 00:00:00`,
+      });
+    }
+
+    if (hasta) {
+      devolucionesQuery.andWhere('devolucion.fecha <= :hasta', {
+        hasta: `${hasta} 23:59:59`,
+      });
+    }
+
+    if (clienteId) {
+      devolucionesQuery.andWhere('clienteDevolucion.id = :clienteId', {
+        clienteId,
+      });
+    }
+
+    const detallesDevoluciones = await devolucionesQuery.getMany();
+
+    const productosActivos = await this.productoRepo.count({
+      where: { activo: true },
     });
-  }
 
-  if (hasta) {
-    query.andWhere('venta.fecha <= :hasta', {
-      hasta: `${hasta} 23:59:59`,
-    });
-  }
-
-  if (clienteId) {
-    query.andWhere('cliente.id = :clienteId', { clienteId });
-  }
-
-  const detalles = await query.getMany();
-
-  const devolucionesQuery = this.dataSource
-    .getRepository(DetalleDevolucionVenta)
-    .createQueryBuilder('detalleDevolucion')
-    .leftJoinAndSelect('detalleDevolucion.devolucion', 'devolucion')
-    .leftJoinAndSelect('devolucion.venta', 'ventaDevolucion')
-    .leftJoinAndSelect('ventaDevolucion.cliente', 'clienteDevolucion')
-    .leftJoinAndSelect('ventaDevolucion.metodoPago', 'metodoPagoDevolucion')
-    .leftJoinAndSelect('detalleDevolucion.producto', 'productoDevolucion')
-    .leftJoinAndSelect('productoDevolucion.categoria', 'categoriaDevolucion')
-    .where('devolucion.estadoCredito = :completado', {
-      completado: 'completado',
+    const productosInactivos = await this.productoRepo.count({
+      where: { activo: false },
     });
 
-  if (desde) {
-    devolucionesQuery.andWhere('devolucion.fecha >= :desde', {
-      desde: `${desde} 00:00:00`,
-    });
+    let ventasBrutas = 0;
+    let totalDevoluciones = 0;
+    let totalProductosVendidos = 0;
+    let totalProductosDevueltos = 0;
+
+    const productosVendidos: Record<string, number> = {};
+    const categorias: Record<string, number> = {};
+    const metodosPago: Record<string, number> = {};
+
+    for (const detalle of detalles) {
+      const cantidad = Number(detalle.cantidad);
+      const total = Number(detalle.total);
+      const nombreProducto = detalle.producto.nombre;
+      const categoria = detalle.producto?.categoria?.nombre || 'Sin categoría';
+      const metodoPago = detalle.venta?.metodoPago?.nombre || 'Sin método de pago';
+
+      ventasBrutas += total;
+      totalProductosVendidos += cantidad;
+
+      productosVendidos[nombreProducto] =
+        (productosVendidos[nombreProducto] || 0) + cantidad;
+
+      categorias[categoria] = (categorias[categoria] || 0) + total;
+      metodosPago[metodoPago] = (metodosPago[metodoPago] || 0) + total;
+    }
+
+    for (const detalle of detallesDevoluciones) {
+      const cantidad = Number(detalle.cantidad);
+      const total = Number(detalle.total);
+      const nombreProducto = detalle.producto.nombre;
+      const categoria =
+        detalle.producto?.categoria?.nombre || 'Sin categoría';
+      const metodoPago =
+        detalle.devolucion?.venta?.metodoPago?.nombre || 'Sin método de pago';
+
+      totalDevoluciones += total;
+      totalProductosDevueltos += cantidad;
+
+      productosVendidos[nombreProducto] =
+        (productosVendidos[nombreProducto] || 0) - cantidad;
+
+      categorias[categoria] = (categorias[categoria] || 0) - total;
+      metodosPago[metodoPago] = (metodosPago[metodoPago] || 0) - total;
+    }
+
+    const totalIngresos = ventasBrutas - totalDevoluciones;
+    const totalProductos = totalProductosVendidos - totalProductosDevueltos;
+
+    const ventasPorCategoria = Object.entries(categorias).map(
+      ([categoria, total]) => ({
+        categoria,
+        total: Math.max(0, total),
+      }),
+    );
+
+    const ventasPorMetodoPago = Object.entries(metodosPago).map(
+      ([metodoPago, total]) => ({
+        metodoPago,
+        total: Math.max(0, total),
+      }),
+    );
+
+    const productoMasVendido =
+      Object.entries(productosVendidos)
+        .filter(([, cantidad]) => cantidad > 0)
+        .sort((a, b) => b[1] - a[1])[0]?.[0] || 'Sin ventas';
+
+    const ventaQuery = this.ventaRepo
+      .createQueryBuilder('venta')
+      .leftJoin('venta.cliente', 'cliente')
+      .where('venta.estado = :estado', { estado: 'confirmada' });
+
+    if (desde) {
+      ventaQuery.andWhere('venta.fecha >= :desde', {
+        desde: `${desde} 00:00:00`,
+      });
+    }
+
+    if (hasta) {
+      ventaQuery.andWhere('venta.fecha <= :hasta', {
+        hasta: `${hasta} 23:59:59`,
+      });
+    }
+
+    if (clienteId) {
+      ventaQuery.andWhere('cliente.id = :clienteId', { clienteId });
+    }
+
+    const cantidadVentas = await ventaQuery.getCount();
+
+    return {
+      ventasBrutas,
+      totalDevoluciones,
+      totalIngresos,
+      totalProductos,
+      cantidadVentas,
+      productoMasVendido,
+      productosActivos,
+      productosInactivos,
+      ventasPorCategoria,
+      ventasPorMetodoPago,
+    };
   }
-
-  if (hasta) {
-    devolucionesQuery.andWhere('devolucion.fecha <= :hasta', {
-      hasta: `${hasta} 23:59:59`,
-    });
-  }
-
-  if (clienteId) {
-    devolucionesQuery.andWhere('clienteDevolucion.id = :clienteId', {
-      clienteId,
-    });
-  }
-
-  const detallesDevoluciones = await devolucionesQuery.getMany();
-
-  const productosActivos = await this.productoRepo.count({
-    where: { activo: true },
-  });
-
-  const productosInactivos = await this.productoRepo.count({
-    where: { activo: false },
-  });
-
-  let ventasBrutas = 0;
-  let totalDevoluciones = 0;
-  let totalProductosVendidos = 0;
-  let totalProductosDevueltos = 0;
-
-  const productosVendidos: Record<string, number> = {};
-  const categorias: Record<string, number> = {};
-  const metodosPago: Record<string, number> = {};
-
-  for (const detalle of detalles) {
-    const cantidad = Number(detalle.cantidad);
-    const total = Number(detalle.total);
-    const nombreProducto = detalle.producto.nombre;
-    const categoria = detalle.producto?.categoria?.nombre || 'Sin categoría';
-    const metodoPago = detalle.venta?.metodoPago?.nombre || 'Sin método de pago';
-
-    ventasBrutas += total;
-    totalProductosVendidos += cantidad;
-
-    productosVendidos[nombreProducto] =
-      (productosVendidos[nombreProducto] || 0) + cantidad;
-
-    categorias[categoria] = (categorias[categoria] || 0) + total;
-    metodosPago[metodoPago] = (metodosPago[metodoPago] || 0) + total;
-  }
-
-  for (const detalle of detallesDevoluciones) {
-    const cantidad = Number(detalle.cantidad);
-    const total = Number(detalle.total);
-    const nombreProducto = detalle.producto.nombre;
-    const categoria =
-      detalle.producto?.categoria?.nombre || 'Sin categoría';
-    const metodoPago =
-      detalle.devolucion?.venta?.metodoPago?.nombre || 'Sin método de pago';
-
-    totalDevoluciones += total;
-    totalProductosDevueltos += cantidad;
-
-    productosVendidos[nombreProducto] =
-      (productosVendidos[nombreProducto] || 0) - cantidad;
-
-    categorias[categoria] = (categorias[categoria] || 0) - total;
-    metodosPago[metodoPago] = (metodosPago[metodoPago] || 0) - total;
-  }
-
-  const totalIngresos = ventasBrutas - totalDevoluciones;
-  const totalProductos = totalProductosVendidos - totalProductosDevueltos;
-
-  const ventasPorCategoria = Object.entries(categorias).map(
-    ([categoria, total]) => ({
-      categoria,
-      total: Math.max(0, total),
-    }),
-  );
-
-  const ventasPorMetodoPago = Object.entries(metodosPago).map(
-    ([metodoPago, total]) => ({
-      metodoPago,
-      total: Math.max(0, total),
-    }),
-  );
-
-  const productoMasVendido =
-    Object.entries(productosVendidos)
-      .filter(([, cantidad]) => cantidad > 0)
-      .sort((a, b) => b[1] - a[1])[0]?.[0] || 'Sin ventas';
-
-  const ventaQuery = this.ventaRepo
-    .createQueryBuilder('venta')
-    .leftJoin('venta.cliente', 'cliente')
-    .where('venta.estado = :estado', { estado: 'confirmada' });
-
-  if (desde) {
-    ventaQuery.andWhere('venta.fecha >= :desde', {
-      desde: `${desde} 00:00:00`,
-    });
-  }
-
-  if (hasta) {
-    ventaQuery.andWhere('venta.fecha <= :hasta', {
-      hasta: `${hasta} 23:59:59`,
-    });
-  }
-
-  if (clienteId) {
-    ventaQuery.andWhere('cliente.id = :clienteId', { clienteId });
-  }
-
-  const cantidadVentas = await ventaQuery.getCount();
-
-  return {
-    ventasBrutas,
-    totalDevoluciones,
-    totalIngresos,
-    totalProductos,
-    cantidadVentas,
-    productoMasVendido,
-    productosActivos,
-    productosInactivos,
-    ventasPorCategoria,
-    ventasPorMetodoPago,
-  };
-}
 
 }

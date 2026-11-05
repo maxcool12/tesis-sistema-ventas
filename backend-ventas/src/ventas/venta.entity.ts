@@ -36,7 +36,7 @@ estado!: 'confirmada' | 'pendiente' | 'cancelada';
   cliente!: Cliente;
 
   @ManyToOne(() => MetodoPago, { nullable: true })
-  metodoPago!: MetodoPago;
+metodoPago!: MetodoPago | null;
 
   @ManyToOne(() => Empleado, { nullable: true })
   @JoinColumn({ name: 'empleadoId' })
@@ -49,5 +49,13 @@ estado!: 'confirmada' | 'pendiente' | 'cancelada';
     () => DetalleVenta,
     (detalle) => detalle.venta,
   )
-  detalles!: DetalleVenta[];
+  detalles!:
+   DetalleVenta[];
+
+   @Column('decimal', {
+  precision: 10,
+  scale: 2,
+  default: 0,
+})
+saldoFavorUsado!: number;
 }
